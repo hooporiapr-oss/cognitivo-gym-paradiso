@@ -257,6 +257,7 @@ function tryEnter(){
     .catch(function(){ return null })
     .then(function(cat){
       sessionStorage.setItem('ritnome-category', (typeof cat === 'string' ? cat : '') || '');
+      sessionStorage.removeItem('gym-player-ok');     // a new sign-in asks "who's playing?" again (jugador.js)
       window.location.href = 'dynamic-hub.html';
     });
   })
