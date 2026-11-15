@@ -601,9 +601,10 @@ var currentStandingsSpeed=80;
 
 function fetchStandingsFor(patternKey){
   // Scoped to the current session's own school — two different
-  // access codes are two genuinely separate boards.
+  // access codes are two genuinely separate boards. Runs hidden in
+  // the admin (cadapunto.com/standings.html) stay on file, off the board.
   var school=sessionStorage.getItem('ritnome-school')||'';
-  var url=SB_URL+'/rest/v1/'+SB_TABLE+'?select=player_name,time_seconds,total_flashes,hits_scored&pattern=eq.'+encodeURIComponent(patternKey)+'&school_name=eq.'+encodeURIComponent(school);
+  var url=SB_URL+'/rest/v1/'+SB_TABLE+'?select=player_name,time_seconds,total_flashes,hits_scored&pattern=eq.'+encodeURIComponent(patternKey)+'&school_name=eq.'+encodeURIComponent(school)+'&hidden=is.false';
   return fetch(url,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}})
     .then(function(r){if(!r.ok)throw new Error('bad response');return r.json()})
     .then(function(rows){
