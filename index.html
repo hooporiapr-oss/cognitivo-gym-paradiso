@@ -241,7 +241,24 @@ function tryEnter(){
     sessionStorage.setItem('hoop-school', school);
     sessionStorage.setItem('ritnome-school', school);
 
-    window.location.href = 'dynamic-hub.html';
+    // CATEGORY — a code can carry an age group (set in License Admin).
+    // Ritnome saves each run under it and opens the school's board on
+    // it. No category, or no answer, simply means none: never a block.
+    return fetch(SUPABASE_URL + '/rest/v1/rpc/license_category', {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ p_code: input, p_product: PRODUCT })
+    })
+    .then(function(r){ return r.ok ? r.json() : null })
+    .catch(function(){ return null })
+    .then(function(cat){
+      sessionStorage.setItem('ritnome-category', (typeof cat === 'string' ? cat : '') || '');
+      window.location.href = 'dynamic-hub.html';
+    });
   })
   .catch(function(){
     // A network or server failure is a different problem from a bad

@@ -80,6 +80,8 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
 .standings-tab-row.speeds .standings-tab{border-color:rgba(255,211,90,.25)}
 .standings-tab-row.speeds .standings-tab.active{border-color:#ffd35a;color:#ffd35a;background:rgba(255,211,90,.1)}
 .standings-tab-row[hidden]{display:none}
+.standings-tab-row.cats .standings-tab{border-color:rgba(61,220,114,.3)}
+.standings-tab-row.cats .standings-tab.active{border-color:#3ddc72;color:#3ddc72;background:rgba(61,220,114,.1)}
 .standings-tab.active{border-color:#00e5ff;color:#00e5ff;background:rgba(0,229,255,.1)}
 
 @media (max-width:420px){
@@ -129,7 +131,7 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
        between two parts of one product, not a cross-domain link. -->
   <a href="dynamic-hub.html" style="position:fixed;top:16px;right:16px;padding:8px 16px;border:1px solid rgba(255,107,53,.5);background:rgba(255,107,53,.15);color:#fff;font-size:.78rem;font-weight:900;letter-spacing:.04em;text-transform:uppercase;border-radius:999px;cursor:pointer;backdrop-filter:blur(4px);text-decoration:none;z-index:120">🎯 Memory Games</a>
 
-  <div class="rit-sub">Ritnome Basketball</div>
+  <div class="rit-sub">Ritnome Basketball<span id="introCat"></span></div>
   <div class="rit-rule" id="ritRule">The beat never waits. Tap as many as you can.</div>
 
   <div class="speed-label">Speed</div>
@@ -179,6 +181,7 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
   <div class="box-sub" id="boxSub">Go No Go · Most Hits Out Of 25 Reds</div>
   <div class="standings-tab-row" id="standingsTabRow"></div>
   <div class="standings-tab-row speeds" id="standingsSpeedRow"></div>
+  <div class="standings-tab-row cats" id="standingsCatRow" hidden></div>
   <div class="box-section">
     <div class="box-section-label" id="standingsLabel">Standings — Best Hit Count Per Player</div>
     <div id="standingsList"></div>
@@ -199,13 +202,15 @@ var $=id=>document.getElementById(id);
 var SB_URL='https://sdaphocueugzfvjovuxd.supabase.co';
 var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkYXBob2N1ZXVnemZ2am92dXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2MjQyMDgsImV4cCI6MjA5OTIwMDIwOH0.pDAzf4P6dD9eNEBlnP95SdF5BI-R84-Rdc0vKzYcn7M';
 var SB_TABLE='ritnome_standings';
+// The age group of the code this session came in with ('' = none).
+function myCategory(){try{return sessionStorage.getItem('ritnome-category')||''}catch(e){return ''}}
 var currentPlayerName='';
 
 function recordScoreToStandings(name,pattern,timeSeconds,flashes,hitsScored){
   return fetch(SB_URL+'/rest/v1/'+SB_TABLE,{
     method:'POST',
     headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'},
-    body:JSON.stringify({player_name:name,pattern:pattern,time_seconds:timeSeconds,total_flashes:flashes,hits_scored:(hitsScored===undefined?null:hitsScored),school_name:sessionStorage.getItem('ritnome-school')||null})
+    body:JSON.stringify({player_name:name,pattern:pattern,time_seconds:timeSeconds,total_flashes:flashes,hits_scored:(hitsScored===undefined?null:hitsScored),school_name:sessionStorage.getItem('ritnome-school')||null,category:myCategory()||null})
   }).catch(function(){});
 }
 
@@ -265,6 +270,7 @@ document.querySelectorAll('.speed-btn').forEach(function(btn){
   };
 });
 refreshIntro();
+if(myCategory())$('introCat').textContent=' · '+myCategory();
 
 // ---- Audio: a synthesized dribble thump, not a sample. A low
 // sine sweep gives the thud its body; a short filtered noise burst
@@ -598,18 +604,38 @@ var STANDINGS_PATTERNS=[
 ];
 var currentStandingsPattern='gonogo';
 var currentStandingsSpeed=80;
+// '' = All. Opens on the player's own age group when the code has one.
+var currentStandingsCategory=myCategory();
+function catSort(a,b){var x=parseInt(a,10),y=parseInt(b,10);if(!isNaN(x)&&!isNaN(y)&&x!==y)return x-y;return a.localeCompare(b)}
+function renderCategoryTabs(cats){
+  var row=$('standingsCatRow');
+  if(currentStandingsCategory&&cats.indexOf(currentStandingsCategory)===-1)cats=cats.concat([currentStandingsCategory]).sort(catSort);
+  if(!cats.length){row.hidden=true;row.innerHTML='';return}
+  row.hidden=false;
+  row.innerHTML=[''].concat(cats).map(function(c){
+    var safe=c.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    return '<button class="standings-tab'+(c===currentStandingsCategory?' active':'')+'" data-cat="'+safe+'">'+(c?safe:'All')+'</button>';
+  }).join('');
+  row.querySelectorAll('.standings-tab').forEach(function(btn){
+    btn.addEventListener('click',function(){currentStandingsCategory=btn.dataset.cat;renderStandingsForPattern(currentStandingsPattern)});
+  });
+}
 
 function fetchStandingsFor(patternKey){
   // Scoped to the current session's own school — two different
   // access codes are two genuinely separate boards. Runs hidden in
   // the admin (cadapunto.com/standings.html) stay on file, off the board.
   var school=sessionStorage.getItem('ritnome-school')||'';
-  var url=SB_URL+'/rest/v1/'+SB_TABLE+'?select=player_name,time_seconds,total_flashes,hits_scored&pattern=eq.'+encodeURIComponent(patternKey)+'&school_name=eq.'+encodeURIComponent(school)+'&hidden=is.false';
+  var url=SB_URL+'/rest/v1/'+SB_TABLE+'?select=player_name,time_seconds,total_flashes,hits_scored,category&pattern=eq.'+encodeURIComponent(patternKey)+'&school_name=eq.'+encodeURIComponent(school)+'&hidden=is.false';
   return fetch(url,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}})
     .then(function(r){if(!r.ok)throw new Error('bad response');return r.json()})
     .then(function(rows){
+      var cats={};
+      (rows||[]).forEach(function(r){var c=(r.category||'').trim();if(c)cats[c]=1});
+      renderCategoryTabs(Object.keys(cats).sort(catSort));
       var best={};
       (rows||[]).forEach(function(r){
+        if(currentStandingsCategory&&(r.category||'').trim()!==currentStandingsCategory)return;
         var existing=best[r.player_name];
         if(!existing||(patternKey==='free'?r.time_seconds<existing.time:r.hits_scored>existing.hitsScored)){
           best[r.player_name]={name:r.player_name,time:r.time_seconds,flashes:r.total_flashes,hitsScored:r.hits_scored};
