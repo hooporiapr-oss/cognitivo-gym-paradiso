@@ -45,6 +45,8 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
 .bpm-step:active{background:rgba(124,58,237,.45) !important}
 .bpm-step:disabled{cursor:not-allowed}
 .go-rs{display:none !important;width:100%;max-width:420px;margin:0 auto 12px;padding:14px;border-radius:14px;border:2px solid #a855f7;background:rgba(124,58,237,.18);color:#fff;font-weight:900;letter-spacing:.06em;text-transform:uppercase;text-decoration:none;text-align:center;font-size:.9rem}
+.tone-sw{display:inline-flex;align-items:center;gap:8px;margin:0 auto 14px;padding:8px 16px;border-radius:999px;border:1.5px solid rgba(255,255,255,.25);background:rgba(255,255,255,.05);color:#fff;font-family:inherit;font-size:.8rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+.tone-sw.on{border-color:#ffd35a;color:#ffd35a;background:rgba(255,211,90,.1)}
 .speed-hint{font-size:.78rem;color:#9fb3c8;max-width:420px;margin:0 auto 14px;line-height:1.45;text-align:center}
 .best-line{margin-top:16px;font-size:.85rem;color:#a7adba}
 .best-line b{color:#a855f7}
@@ -117,6 +119,8 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
   <div class="speed-label">Chain speed</div>
   <label class="bpm-box locked" id="bpmBox"><button type="button" class="bpm-step" id="bpmDown" disabled aria-label="Slower">−</button><input id="bpmInput" type="number" inputmode="numeric" min="10" max="300" step="1" value="" placeholder="—" disabled aria-label="Chain speed in BPM"><button type="button" class="bpm-step" id="bpmUp" disabled aria-label="Faster">+</button><span>BPM</span><small id="bpmNote">your Reaction Speed Free Tap · or 90 BPM to start</small></label>
   <div class="speed-hint" id="speedHint"></div>
+  <div><button type="button" class="tone-sw on" id="toneSw" aria-pressed="true">🎵 <span id="toneTxt">Tones: on</span></button>
+  <button type="button" class="tone-sw" id="sizeSw" aria-pressed="false">🎯 <span id="sizeTxt">Balls: normal</span></button></div>
   <button class="big-btn" id="bigStart" onclick="handleStartClick()">▶ START</button>
   <a class="box-open-btn" href="dynamic-memory-standings-gate.html?tab=fortress" style="display:block;margin:6px auto 0;text-decoration:none;text-align:center;line-height:52px">🏆 THE STANDINGS</a>
   <div class="best-line" id="bestLine"></div>
@@ -262,6 +266,7 @@ function buildBoard(){
   var positions=shuffle(LAYOUT);
   var colors=shuffle(TARGET_COLORS);
   var size=Math.max(64,Math.min(104,court.width*.19));
+  if(bigT)size=Math.round(size*1.25);   // Big: 25% larger — as big as the 2-1-2 allows without the balls touching
   for(var i=0;i<NUM_TARGETS;i++){
     var el=document.createElement('div');
     el.className='fortress-ball';
@@ -271,6 +276,7 @@ function buildBoard(){
     el.style.height=size+'px';
     el.style.background=BALL_SEAMS+', radial-gradient(circle at 35% 32%,'+colors[i]+'dd,'+colors[i]+' 55%,'+colors[i]+'99 85%)';
     el.style.color=colors[i];
+    el.dataset.note=TONE_HZ[TARGET_COLORS.indexOf(colors[i])];   // each color always sings the same note
     (function(idx){
       el.addEventListener('pointerdown',function(e){e.preventDefault();handleTargetTap(idx)});
     })(i);
@@ -320,7 +326,43 @@ function playThump(){
   noise.start(now);
 }
 
-function lightTarget(idx){targetEls[idx].classList.add('lit');playThump()}
+// TONES — each ball has its own note (by color, the same every game:
+// red C, gold E, green G, blue A, orange high C — a pentatonic set, so
+// any chain sounds like a little tune). Played when a ball lights in
+// the chain and when the player taps it right; a low buzz on a wrong
+// tap. With tones off, the original dribble thump plays instead.
+// Remembered on this device; on to start.
+var TONE_HZ=[262,330,392,440,523];
+var tonesOn=true;
+try{tonesOn=localStorage.getItem('fortress-tones')!=='off'}catch(e){}
+function playTone(hz,dur,type){
+  if(!audioCtx||!hz)return;
+  try{
+    var now=audioCtx.currentTime, o=audioCtx.createOscillator(), g=audioCtx.createGain();
+    o.type=type||'triangle';o.frequency.setValueAtTime(hz,now);
+    g.gain.setValueAtTime(.0001,now);g.gain.exponentialRampToValueAtTime(.5,now+0.012);g.gain.exponentialRampToValueAtTime(.0001,now+dur);
+    o.connect(g);g.connect(audioCtx.destination);o.start(now);o.stop(now+dur+0.02);
+    window.__tones=(window.__tones||[]);window.__tones.push(hz);
+  }catch(e){}
+}
+function showToneSw(){var b=$('toneSw');b.classList.toggle('on',tonesOn);b.setAttribute('aria-pressed',tonesOn?'true':'false');$('toneTxt').textContent=tonesOn?'Tones: on':'Tones: off'}
+$('toneSw').addEventListener('click',function(){tonesOn=!tonesOn;try{localStorage.setItem('fortress-tones',tonesOn?'on':'off')}catch(e){}showToneSw()});
+showToneSw();
+// BIG BALLS — the same "Big targets" setting as Reaction Speed and
+// Reactific on this tablet; until it is chosen, Big for age groups up to 6.
+var bigT=false;
+(function(){
+  var v='';try{v=localStorage.getItem('rv-size')||''}catch(e){}
+  if(v)bigT=v==='big';
+  else{var a=parseInt(String(sessionStorage.getItem('ritnome-category')||'').replace(/^\D+/,''),10);bigT=!isNaN(a)&&a<=6}
+})();
+function showSizeSw(){var b=$('sizeSw');b.classList.toggle('on',bigT);b.setAttribute('aria-pressed',bigT?'true':'false');$('sizeTxt').textContent=bigT?'Balls: big':'Balls: normal'}
+$('sizeSw').addEventListener('click',function(){bigT=!bigT;try{localStorage.setItem('rv-size',bigT?'big':'normal')}catch(e){}showSizeSw()});
+showSizeSw();
+function lightTarget(idx){
+  targetEls[idx].classList.add('lit');
+  if(tonesOn)playTone(+targetEls[idx].dataset.note,Math.max(.18,Math.min(.6,LIGHT_MS/1000)));else playThump();
+}
 function unlightTarget(idx){targetEls[idx].classList.remove('lit')}
 function setReady(on){targetEls.forEach(function(el){el.classList.toggle('ready',on)})}
 
@@ -403,6 +445,7 @@ function handleTargetTap(idx){
     }
   }else{
     targetEls[idx].classList.add('wrong');
+    if(tonesOn)playTone(110,.45,'sawtooth');
     endDrill();
   }
 }
