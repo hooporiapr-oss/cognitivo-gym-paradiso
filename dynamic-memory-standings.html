@@ -102,8 +102,12 @@ var currentTab='fortress';
 function fetchQuarterStandings(gameKey){
   var school=sessionStorage.getItem('hoop-school')||'';
   var url=SB_URL+'/rest/v1/'+QUARTER_TABLE+'?select=player_name,level_achieved,time_seconds&game_key=eq.'+encodeURIComponent(gameKey)+'&school_name=eq.'+encodeURIComponent(school)+'&hidden=is.false';   // runs hidden in the admin stay on file, off the board
-  return fetch(url,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}})
-    .then(function(r){if(!r.ok)throw new Error('bad response');return r.json()})
+  var h={headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}};
+  // The Fortress also shows the chain speed each best run was played at
+  // (fortress-velocidad.sql); without that column the board loads as before.
+  return (gameKey==='fortress'
+      ? fetch(url.replace('time_seconds&','time_seconds,speed&'),h).then(function(r){if(!r.ok)throw 0;return r.json()}).catch(function(){return fetch(url,h).then(function(r){if(!r.ok)throw new Error('bad response');return r.json()})})
+      : fetch(url,h).then(function(r){if(!r.ok)throw new Error('bad response');return r.json()}))
     .then(function(rows){
       var best={};
       (rows||[]).forEach(function(r){
@@ -126,7 +130,7 @@ function fetchQuarterStandings(gameKey){
           }
         }
         if(isBetter){
-          best[r.player_name]={name:r.player_name,level:r.level_achieved,time:r.time_seconds};
+          best[r.player_name]={name:r.player_name,level:r.level_achieved,time:r.time_seconds,speed:r.speed||null};
         }
       });
       return Object.keys(best).map(function(n){return best[n]}).sort(function(a,b){
@@ -165,7 +169,7 @@ function renderForTab(tabKey){
     listEl.innerHTML=ranked.map(function(p,i){
       var rankClass=i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'';
       var safeName=p.name.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-      var levelDisplay='Level '+p.level;
+      var levelDisplay='Level '+p.level+(p.speed&&/^\d+$/.test(p.speed)?' · '+p.speed+' BPM':'');
       var timeDisplay=p.time==null?'--':p.time.toFixed(2)+' seconds';
       return '<div class="standings-row '+rankClass+'">'
         +'<div class="standings-row-main">'

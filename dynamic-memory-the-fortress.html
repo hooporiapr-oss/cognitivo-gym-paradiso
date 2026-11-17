@@ -30,6 +30,22 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
 .name-input{width:100%;max-width:420px;padding:14px;border-radius:14px;border:2px solid rgba(124,58,237,.4);background:rgba(255,255,255,.05);color:#fff;font-family:Arial,sans-serif;font-size:1rem;text-align:center;margin-bottom:14px}
 .name-input:focus{outline:none;border-color:#a855f7;box-shadow:0 0 20px rgba(124,58,237,.35)}
 .box-open-btn{width:100%;max-width:420px;height:52px;border:2px solid rgba(0,229,255,.5);background:rgba(0,229,255,.1);border-radius:14px;color:#00e5ff;font-size:.9rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;margin-top:6px}
+/* the speed: a BPM box that opens on the player's Reaction Speed Free Tap speed (as in Reactific) */
+.speed-label{font-size:.68rem;font-weight:900;letter-spacing:.22em;text-transform:uppercase;color:#c9a3fa;margin:0 0 8px;text-align:center}
+.bpm-box{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px 10px;width:100%;max-width:420px;min-height:58px;padding:8px 6px;margin:0 auto 10px;border:2px solid rgba(168,85,247,.45);background:rgba(124,58,237,.12);border-radius:14px;cursor:text}
+.bpm-box.active{border-color:#a855f7;background:rgba(124,58,237,.26);box-shadow:0 0 22px rgba(124,58,237,.5)}
+.bpm-box input{width:96px;height:42px;padding:0;border-radius:10px;border:2px solid rgba(255,255,255,.25);background:rgba(0,0,0,.35);color:#fff;font-family:inherit;font-size:1.6rem;font-weight:900;text-align:center;-moz-appearance:textfield}
+.bpm-box input::-webkit-outer-spin-button,.bpm-box input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.bpm-box input:focus{outline:none;border-color:#a855f7}
+.bpm-box span{font-size:1.05rem;font-weight:900;letter-spacing:.08em;color:#fff}
+.bpm-box.locked{opacity:.45;cursor:not-allowed}
+.bpm-box.locked input{cursor:not-allowed}
+.bpm-box small{flex-basis:100%;text-align:center;font-size:.6rem;color:#a7adba;letter-spacing:.08em;font-weight:700;text-transform:uppercase}
+.bpm-step{width:44px;height:42px;padding:0;border-radius:10px;border:2px solid rgba(255,255,255,.25);background:rgba(0,0,0,.35) !important;color:#fff;font-family:inherit;font-size:1.6rem;font-weight:900;line-height:1;cursor:pointer;-webkit-tap-highlight-color:transparent;outline:none}
+.bpm-step:active{background:rgba(124,58,237,.45) !important}
+.bpm-step:disabled{cursor:not-allowed}
+.go-rs{display:none !important;width:100%;max-width:420px;margin:0 auto 12px;padding:14px;border-radius:14px;border:2px solid #a855f7;background:rgba(124,58,237,.18);color:#fff;font-weight:900;letter-spacing:.06em;text-transform:uppercase;text-decoration:none;text-align:center;font-size:.9rem}
+.speed-hint{font-size:.78rem;color:#9fb3c8;max-width:420px;margin:0 auto 14px;line-height:1.45;text-align:center}
 .best-line{margin-top:16px;font-size:.85rem;color:#a7adba}
 .best-line b{color:#a855f7}
 .intro-back{position:fixed;top:16px;left:16px;padding:8px 16px;border:2px solid rgba(255,255,255,.25);background:rgba(0,0,0,.5);color:#fff;font-size:.78rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;border-radius:999px;text-decoration:none;z-index:60}
@@ -96,8 +112,11 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
   <a class="intro-back" href="dynamic-hub.html">← Home</a>
   <div class="vrr-sub">Dynamic Memory · The 2-1-2 Zone</div>
   <div class="vrr-title">THE <span>FORTRESS</span></div>
-  <div class="rule-t"><b>Five basketballs, set in a real 2-1-2 zone, fixed in place.</b> Watch the chain light up inside the key, then repeat it back — at your own pace, any speed. Every round the chain adds one more ball. One wrong tap ends the run — your score is the longest chain you held.</div>
+  <div class="rule-t"><b>Five basketballs, set in a real 2-1-2 zone, fixed in place.</b> Watch the chain light up inside the key — one ball per beat, at your speed — then repeat it back at your own pace. Every round the chain adds one more ball. One wrong tap ends the run — your score is the longest chain you held.</div>
   <input type="text" id="playerNameInputMain" class="name-input" maxlength="20" placeholder="Your name" autocomplete="off">
+  <div class="speed-label">Chain speed</div>
+  <label class="bpm-box locked" id="bpmBox"><button type="button" class="bpm-step" id="bpmDown" disabled aria-label="Slower">−</button><input id="bpmInput" type="number" inputmode="numeric" min="10" max="300" step="1" value="" placeholder="—" disabled aria-label="Chain speed in BPM"><button type="button" class="bpm-step" id="bpmUp" disabled aria-label="Faster">+</button><span>BPM</span><small id="bpmNote">your Reaction Speed Free Tap · or 90 BPM to start</small></label>
+  <div class="speed-hint" id="speedHint"></div>
   <button class="big-btn" id="bigStart" onclick="handleStartClick()">▶ START</button>
   <a class="box-open-btn" href="dynamic-memory-standings-gate.html?tab=fortress" style="display:block;margin:6px auto 0;text-decoration:none;text-align:center;line-height:52px">🏆 THE STANDINGS</a>
   <div class="best-line" id="bestLine"></div>
@@ -140,6 +159,7 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
   <div class="final-label">Longest Chain Held</div>
   <div class="final-stats" id="finalStats">
     <div class="final-stat-cell"><div class="final-stat-label">Time</div><div class="final-stat-val" id="endTime">0.0s</div></div>
+    <div class="final-stat-cell"><div class="final-stat-label">Chain speed</div><div class="final-stat-val" id="endBpm">—</div></div>
   </div>
   <a class="box-open-btn" href="dynamic-memory-standings-gate.html?tab=fortress" style="max-width:280px;margin:6px auto 0;display:block;text-decoration:none;text-align:center;line-height:52px">🏆 THE STANDINGS</a>
   <button class="next-player-btn" id="nextPlayerBtn">▶ NEXT PLAYER</button>
@@ -151,8 +171,11 @@ function $(id){return document.getElementById(id)}
 
 var BEST_KEY='dm-fortress-best';
 var NUM_TARGETS=5;
+// Each ball of the chain gets one beat at the chosen BPM: lit for 2/3 of
+// it, dark for 1/3 (at 120 BPM: 333 ms + 167 ms — the original speed).
 var LIGHT_MS=333;
 var GAP_MS=167;
+function setChainSpeed(bpm){var beat=60000/bpm;LIGHT_MS=Math.round(beat*2/3);GAP_MS=Math.round(beat/3)}
 var LEVEL_PAUSE_MS=800;
 
 // Five genuinely distinct ball tints — each is the same basketball
@@ -183,7 +206,7 @@ function recordScoreToStandings(name,levelAchieved,timeSeconds){
   return fetch(SB_URL+'/rest/v1/'+SB_TABLE,{
     method:'POST',
     headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'},
-    body:JSON.stringify({player_name:name,game_key:THIS_GAME_KEY,level_achieved:levelAchieved,time_seconds:(timeSeconds===undefined?null:timeSeconds),school_name:sessionStorage.getItem('hoop-school')||null})
+    body:JSON.stringify({player_name:name,game_key:THIS_GAME_KEY,level_achieved:levelAchieved,time_seconds:(timeSeconds===undefined?null:timeSeconds),speed:String(SPEED),school_name:sessionStorage.getItem('hoop-school')||null})   // speed needs fortress-velocidad.sql
   }).catch(function(){});
 }
 $('nextPlayerBtn').addEventListener('click',function(){
@@ -193,6 +216,7 @@ $('nextPlayerBtn').addEventListener('click',function(){
   $('screen-end').style.display='none';
   $('screen-intro').style.display='flex';
   $('playerNameInputMain').focus();
+  boxTouched=false;refreshBox();
 });
 
 var phase='idle';
@@ -402,6 +426,7 @@ function showFinalScore(finalLevel,finalTime){
 
   $('endNum').textContent=finalLevel;
   $('endTime').textContent=finalTime.toFixed(1)+'s';
+  $('endBpm').textContent=SPEED+' BPM';
   $('screen-game').style.display='none';
   $('screen-end').style.display='flex';
 }
@@ -424,8 +449,82 @@ function handleStartClick(){
     return;
   }
   currentPlayerName=name.slice(0,20);
+  $('bpmInput').value=bpmFromBox();SPEED=bpmFromBox();setChainSpeed(SPEED);   // a half-typed speed is settled before play
   startDrill();
 }
+
+// ══════════════════════════════════════════════════════
+//  THE CHAIN SPEED — as in Reactific: a BPM box (10 to 300) that opens
+//  on the player's best Free Tap speed from REACTION SPEED (kept on this
+//  device per name, and looked up on this school's Reaction Speed Free
+//  Tap board so it follows them to any tablet). A player with no Free
+//  Tap yet starts at 90 BPM (the original was 120) — so no one is ever
+//  kept out of the game.
+//  − / + move 5 BPM; that changes only this game, never the default.
+// ══════════════════════════════════════════════════════
+var SPEED=90, BPM_MIN=10, BPM_MAX=300;
+function bpmFromBox(){
+  var v=parseInt($('bpmInput').value,10);
+  if(isNaN(v))v=90;
+  return Math.max(BPM_MIN,Math.min(BPM_MAX,v));
+}
+function showHint(){
+  var b=$('bpmInput').disabled?0:bpmFromBox();
+  $('speedHint').textContent=b?('Each ball lights for '+(Math.round(40000/b)/1000).toFixed(2)+' s · one ball per beat at '+b+' BPM. Repeat it back at your own pace.'):'';
+}
+function pickBox(){
+  if($('bpmInput').disabled)return;
+  SPEED=bpmFromBox();setChainSpeed(SPEED);
+  $('bpmBox').classList.add('active');showHint();
+}
+function freeKey(n){return 'rv-free-bpm:'+String(n||'').trim().toLowerCase()}   // Reaction Speed's Free Tap default
+function savedFreeBPM(n){try{var v=parseInt(localStorage.getItem(freeKey(n)),10);return isNaN(v)?0:v}catch(e){return 0}}
+var dbAsked={};
+function askBestFree(n){
+  var k=String(n||'').trim().toLowerCase(); if(!k||dbAsked[k])return;
+  dbAsked[k]=1;
+  var school=sessionStorage.getItem('hoop-school')||'';
+  var url=SB_URL+'/rest/v1/vr_reaction_speed_standings?select=speed&speed=like.free-*&hidden=is.false'+
+    '&school_name=eq.'+encodeURIComponent(school)+'&player_name=ilike.'+encodeURIComponent(String(n).trim().replace(/[*%,()]/g,''));
+  fetch(url,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}})
+    .then(function(r){return r.ok?r.json():[]})
+    .then(function(rows){
+      var top=0;(rows||[]).forEach(function(r){var v=parseInt(String(r.speed).split('-')[1],10);if(v>top)top=v});
+      if(top>savedFreeBPM(n)){try{localStorage.setItem(freeKey(n),String(top))}catch(e){}}
+      if(String($('playerNameInputMain').value).trim().toLowerCase()===k&&$('screen-intro').style.display!=='none')refreshBox(true);
+    })
+    .catch(function(){});
+}
+function refreshBox(fromDb){
+  if(phase==='running'||$('screen-intro').style.display==='none')return;
+  var n=$('playerNameInputMain').value, own=n.trim()?savedFreeBPM(n):0, v=own||90;   // no Free Tap yet: 90 BPM
+  if(!fromDb&&n.trim())askBestFree(n);
+  var box=$('bpmBox'), inp=$('bpmInput');
+  $('bpmDown').disabled=$('bpmUp').disabled=false;
+  inp.disabled=false;box.classList.remove('locked');
+  if(!boxTouched||!inp.value)inp.value=v;   // a speed the coach already set with − / + or typed is kept
+  $('bpmNote').textContent=own?'your Reaction Speed Free Tap · − / + or type any speed':'no Free Tap yet — 90 BPM to start · − / + or type any speed';
+  pickBox();
+}
+var nameTimer=null, boxTouched=false;
+$('playerNameInputMain').addEventListener('input',function(){
+  boxTouched=false;$('bpmInput').value='';$('bpmInput').disabled=true;   // a new name starts from that player's own default
+  refreshBox(true);
+  clearTimeout(nameTimer);nameTimer=setTimeout(function(){refreshBox()},500);
+});
+function stepBPM(d){
+  if($('bpmInput').disabled)return;
+  boxTouched=true;
+  $('bpmInput').value=Math.max(BPM_MIN,Math.min(BPM_MAX,bpmFromBox()+d));pickBox();
+}
+$('bpmDown').addEventListener('click',function(e){e.preventDefault();stepBPM(-5)});
+$('bpmUp').addEventListener('click',function(e){e.preventDefault();stepBPM(5)});
+document.addEventListener('DOMContentLoaded',function(){setTimeout(refreshBox,0)});   // after the player's name is filled in (jugador.js)
+$('bpmInput').addEventListener('focus',pickBox);
+$('bpmInput').addEventListener('input',function(){boxTouched=true;pickBox()});
+$('bpmInput').addEventListener('change',function(){$('bpmInput').value=bpmFromBox();pickBox()});
+$('bpmInput').addEventListener('keydown',function(e){if(e.key==='Enter'){$('bpmInput').value=bpmFromBox();pickBox();$('bpmInput').blur()}});
+
 $('playerNameInputMain').addEventListener('keydown',function(e){
   if(e.key==='Enter')handleStartClick();
 });
