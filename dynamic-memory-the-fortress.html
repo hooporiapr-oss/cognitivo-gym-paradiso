@@ -47,6 +47,21 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
 .go-rs{display:none !important;width:100%;max-width:420px;margin:0 auto 12px;padding:14px;border-radius:14px;border:2px solid #a855f7;background:rgba(124,58,237,.18);color:#fff;font-weight:900;letter-spacing:.06em;text-transform:uppercase;text-decoration:none;text-align:center;font-size:.9rem}
 .tone-sw{display:inline-flex;align-items:center;gap:8px;margin:0 auto 14px;padding:8px 16px;border-radius:999px;border:1.5px solid rgba(255,255,255,.25);background:rgba(255,255,255,.05);color:#fff;font-family:inherit;font-size:.8rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
 .tone-sw.on{border-color:#ffd35a;color:#ffd35a;background:rgba(255,211,90,.1)}
+/* My progress: the longest chain, game by game */
+#screen-prog{position:fixed;inset:0;z-index:120;display:none;flex-direction:column;align-items:center;background:#000;overflow-y:auto;padding:24px 16px 32px;text-align:center}
+.prog-back{align-self:flex-start;padding:8px 16px;border:2px solid rgba(255,255,255,.25);background:rgba(0,0,0,.5);color:#fff;font-size:.78rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;border-radius:999px;cursor:pointer;font-family:inherit;margin-bottom:18px}
+.prog-title{font-size:2rem;font-weight:900;font-style:italic;letter-spacing:.06em;text-transform:uppercase;text-shadow:0 0 30px rgba(124,58,237,.7)}
+.prog-title span{color:#a855f7}
+.prog-sub{font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;color:#a7adba;margin:6px 0 18px}
+#progBody{width:100%;max-width:560px}
+.prog-empty{color:#a7adba;font-size:.9rem;padding:20px}
+.prog-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.prog-cell{text-align:center;padding:12px 6px;border-radius:12px;background:rgba(124,58,237,.1);border:1px solid rgba(124,58,237,.4)}
+.prog-val{font-size:1.6rem;font-weight:900;color:#c9a3fa;line-height:1}
+.prog-lbl{font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:#9fb3c8;margin-top:4px}
+.prog-change{font-size:.9rem;font-weight:900;color:#fff;margin-bottom:12px}
+.prog-change b{color:#a855f7}
+.prog-chart{width:100%;height:auto;display:block;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:14px}
 .speed-hint{font-size:.78rem;color:#9fb3c8;max-width:420px;margin:0 auto 14px;line-height:1.45;text-align:center}
 .best-line{margin-top:16px;font-size:.85rem;color:#a7adba}
 .best-line b{color:#a855f7}
@@ -123,7 +138,16 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
   <button type="button" class="tone-sw" id="sizeSw" aria-pressed="false">🎯 <span id="sizeTxt">Balls: normal</span></button></div>
   <button class="big-btn" id="bigStart" onclick="handleStartClick()">▶ START</button>
   <a class="box-open-btn" href="dynamic-memory-standings-gate.html?tab=fortress" style="display:block;margin:6px auto 0;text-decoration:none;text-align:center;line-height:52px">🏆 THE STANDINGS</a>
+  <button class="box-open-btn" id="progBtn" type="button" style="display:block;margin:10px auto 0;border-color:rgba(168,85,247,.6);background:rgba(124,58,237,.12);color:#c9a3fa">📈 MY PROGRESS</button>
   <div class="best-line" id="bestLine"></div>
+</div>
+
+<!-- MY PROGRESS -->
+<div id="screen-prog">
+  <button class="prog-back" id="closeProgBtn" type="button">← Back</button>
+  <div class="prog-title">MY <span>PROGRESS</span></div>
+  <div class="prog-sub" id="progSub">The Fortress · longest chain, game by game</div>
+  <div id="progBody"></div>
 </div>
 
 <!-- COUNTDOWN -->
@@ -166,6 +190,7 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
     <div class="final-stat-cell"><div class="final-stat-label">Chain speed</div><div class="final-stat-val" id="endBpm">—</div></div>
   </div>
   <a class="box-open-btn" href="dynamic-memory-standings-gate.html?tab=fortress" style="max-width:280px;margin:6px auto 0;display:block;text-decoration:none;text-align:center;line-height:52px">🏆 THE STANDINGS</a>
+  <button class="box-open-btn" id="endProgBtn" type="button" style="max-width:280px;display:block;margin:10px auto 0;border-color:rgba(168,85,247,.6);background:rgba(124,58,237,.12);color:#c9a3fa">📈 MY PROGRESS</button>
   <button class="next-player-btn" id="nextPlayerBtn">▶ NEXT PLAYER</button>
   <a href="dynamic-hub.html" style="display:block;margin-top:16px;max-width:280px;margin-left:auto;margin-right:auto;text-decoration:none;text-align:center;padding:14px 24px;border-radius:100px;background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;font-weight:900;letter-spacing:1px;font-size:.95rem">▶ BACK TO HUB</a>
 </div>
@@ -473,6 +498,60 @@ function showFinalScore(finalLevel,finalTime){
   $('screen-game').style.display='none';
   $('screen-end').style.display='flex';
 }
+
+// MY PROGRESS — the longest chain of every Fortress game the player has
+// saved at this school, oldest first; each point also shows the chain
+// speed it was played at (games from before speeds show just the chain).
+var progReturn='screen-intro';
+function openProgress(from){
+  var n=String($('playerNameInputMain').value||currentPlayerName||'').trim();
+  progReturn=from;$(from).style.display='none';$('screen-prog').style.display='flex';
+  $('progSub').textContent='The Fortress · longest chain, game by game'+(n?' · '+n:'');
+  if(!n){$('progBody').innerHTML='<div class="prog-empty">Type the player\'s name first.</div>';return}
+  $('progBody').innerHTML='<div class="prog-empty">Loading…</div>';
+  var school=sessionStorage.getItem('hoop-school')||'';
+  var base=SB_URL+'/rest/v1/'+SB_TABLE+'?game_key=eq.fortress&hidden=is.false'+
+    '&school_name=eq.'+encodeURIComponent(school)+'&player_name=ilike.'+encodeURIComponent(n.replace(/[*%,()]/g,''));
+  var h={headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}};
+  fetch(base+'&select=level_achieved,speed,logged_at,admin_id&order=admin_id.asc',h)
+    .then(function(r){if(!r.ok)throw 0;return r.json()})
+    .catch(function(){return fetch(base+'&select=level_achieved',h).then(function(r){return r.ok?r.json():[]})})
+    .then(function(rows){drawProgress(rows||[])})
+    .catch(function(){drawProgress([])});
+}
+function drawProgress(rows){
+  var pts=[];
+  rows.forEach(function(r){var v=parseInt(r.level_achieved,10);if(v>=0)pts.push({c:v,b:/^\d+$/.test(r.speed||'')?+r.speed:0,at:r.logged_at||''})});
+  if(pts.length>40)pts=pts.slice(-40);   // the latest 40 games
+  if(!pts.length){$('progBody').innerHTML='<div class="prog-empty">No Fortress games yet — play one to start the line.</div>';return}
+  var first=pts[0].c, last=pts[pts.length-1].c, top=0, topI=0;
+  pts.forEach(function(p,i){if(p.c>top){top=p.c;topI=i}});
+  var cell=function(v,l){return '<div class="prog-cell"><div class="prog-val">'+v+'</div><div class="prog-lbl">'+l+'</div></div>'};
+  var html='<div class="prog-stats">'+cell(first,'First')+cell(last,'Latest')+cell(top,'Longest')+'</div>';
+  if(pts.length<2){$('progBody').innerHTML=html+'<div class="prog-empty">One game so far — play again to see the line.</div>';return}
+  var d=last-first;
+  html+='<div class="prog-change"><b>'+(d>0?'+':'')+d+' ball'+(Math.abs(d)===1?'':'s')+'</b> since the first game · '+pts.length+' games</div>';
+  var W=560,H=240,L=40,R=16,T=20,B=34;
+  var hi=Math.max(4,top+1), lo=0;
+  var X=function(i){return L+(W-L-R)*i/(pts.length-1)}, Y=function(v){return T+(H-T-B)*(hi-v)/(hi-lo)};
+  var svg='<svg class="prog-chart" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="The Fortress longest chain, game by game">';
+  var step=hi<=8?1:hi<=16?2:5;
+  for(var g=lo;g<=hi;g+=step){svg+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+Y(g)+'" y2="'+Y(g)+'" stroke="rgba(255,255,255,.08)"/><text x="'+(L-8)+'" y="'+(Y(g)+4)+'" fill="#9fb3c8" font-size="12" text-anchor="end">'+g+'</text>'}
+  svg+='<polyline fill="none" stroke="#a855f7" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" points="'+pts.map(function(p,i){return X(i).toFixed(1)+','+Y(p.c).toFixed(1)}).join(' ')+'"/>';
+  pts.forEach(function(p,i){
+    var isTop=i===topI;
+    svg+='<circle cx="'+X(i).toFixed(1)+'" cy="'+Y(p.c).toFixed(1)+'" r="'+(isTop?7:4.5)+'" fill="'+(isTop?'#ffd35a':'#a855f7')+'" stroke="#000" stroke-width="1.5"><title>chain '+p.c+(p.b?' · '+p.b+' BPM':'')+'</title></circle>';
+  });
+  svg+='<text x="'+X(topI).toFixed(1)+'" y="'+(Y(top)-12).toFixed(1)+'" fill="#ffd35a" font-size="13" font-weight="900" text-anchor="middle">'+top+'</text>';
+  var day=function(p){if(!p.at)return 'earlier';var dd=new Date(p.at);return isNaN(dd)?'':(dd.getMonth()+1)+'/'+dd.getDate()};
+  svg+='<text x="'+L+'" y="'+(H-10)+'" fill="#9fb3c8" font-size="12">'+day(pts[0])+'</text>';
+  svg+='<text x="'+(W-R)+'" y="'+(H-10)+'" fill="#9fb3c8" font-size="12" text-anchor="end">'+day(pts[pts.length-1])+'</text>';
+  svg+='</svg>';
+  $('progBody').innerHTML=html+svg;
+}
+$('progBtn').addEventListener('click',function(){openProgress('screen-intro')});
+$('endProgBtn').addEventListener('click',function(){openProgress('screen-end')});
+$('closeProgBtn').addEventListener('click',function(){$('screen-prog').style.display='none';$(progReturn).style.display='flex'});
 
 function loadBest(){
   best=0;
