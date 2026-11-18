@@ -221,9 +221,9 @@ function cellSW(t,ph){   // Swipe It: hits out of 25 at the speed played — tab
   if(!t.length)return '📱 '+one(ph);
   return one(t)+(ph.length?'<small>📱 '+(ph[ph.length-1].h!=null?ph[ph.length-1].h+'/25 ':'')+'on phone</small>':'');
 }
-function cellRS(p){   // the new Reaction Speed; the old tap game only when there is nothing newer
+function cellRS(p){   // Cognitivo Gym (tablets): Reaction Speed is the tap game's Free Tap
+  if(p.rs.length)return cellBpm(p.rs);
   if(p.hb.length||p.hbP.length)return cellTP(p.hb,p.hbP);
-  if(p.rs.length)return cellBpm(p.rs).replace('<small>','<small>classic · ');
   return '<span class="dash">—</span>';
 }
 function day(at){if(!at)return '—';var d=new Date(at);return isNaN(d)?'—':(d.getMonth()+1)+'/'+d.getDate()}
@@ -274,9 +274,9 @@ function showPlayer(k){
   var cats=Object.keys(p.cats).sort(ageSort);
   $('pcat').textContent=(cats.length?cats.join(' · ')+' · ':'')+'last played '+day(p.last);
   $('pbody').innerHTML=
-    block('⚡ Reaction Speed · tablet','#00e5ff',p.hb,'BPM','Fastest','No Reaction Speed on a tablet yet.')+
-    (p.hbP.length?block('📱 Reaction Speed · phone','#00e5ff',p.hbP,'BPM','Fastest',''):'')+
-    (p.rs.length?block('⚡ Reaction Speed · classic tap (before)','#5a8fa0',p.rs,'BPM','Fastest',''):'')+
+    block('⚡ Reaction Speed · Free Tap','#00e5ff',p.rs,'BPM','Fastest','No Reaction Speed yet.')+
+    (p.hb.length?block('⚡ Reaction Speed · hold-lift-tap (vreaction.com, tablet)','#5a8fa0',p.hb,'BPM','Fastest',''):'')+
+    (p.hbP.length?block('📱 Reaction Speed · hold-lift-tap (phone)','#5a8fa0',p.hbP,'BPM','Fastest',''):'')+
     block('🔴 Reactific · speed','#00D9A5',p.rf,'BPM','Fastest','No Reactific games yet.')+
     block('🏰 The Fortress · chain','#a855f7',p.ft,'level','Longest','No Fortress games yet.')+
     (hasMobile?block('👆 Swipe It · tablet','#ffd35a',p.sw,'BPM','Fastest','No Swipe It on a tablet yet.')+
