@@ -170,6 +170,11 @@ html,body{width:100%;height:100%;background:#000;font-family:Arial,sans-serif;co
 <!-- The player: one name for every game (see jugador.js) -->
 <script>window.JUGADOR={modo:'juego',hub:'dynamic-hub.html',escuela:'hoop-school',categoria:'ritnome-category',tablas:['dynamic_memory_quarter_standings','hooporia_4qtr_standings']};</script>
 <script src="jugador.js"></script>
+<script>/* School codes (License Admin → Targets: Plain circles): no court floor, plain circles */try{if(sessionStorage.getItem('gym-plain')==='1')document.documentElement.classList.add('plain')}catch(e){}</script>
+<style>
+html.plain .court{background-image:none!important;background-color:#0b1220!important;border-color:rgba(255,255,255,.18)!important}
+html.plain .cell{border-radius:50%!important;aspect-ratio:1/1;height:100%;width:auto;max-width:100%;justify-self:center;align-self:center}
+</style>
 </head>
 <body>
 <div id="quarterStatsScreen">
