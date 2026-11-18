@@ -191,6 +191,15 @@ footer{
   border:1px solid rgba(255,255,255,.3);background:rgba(0,0,0,.45);color:#fff;font-size:.72rem;
   font-weight:900;letter-spacing:.04em;cursor:pointer;backdrop-filter:blur(4px);
 }
+/* each game card in its game's color (as on its start screen): Reaction Speed gold, Reactific green, The Fortress purple, Swipe It red */
+.rit-card.g-rs{border-color:rgba(255,196,0,.55);background:rgba(255,196,0,.09)}
+.rit-card.g-rs .rit-num{color:#ffc400}
+.rit-card.g-rf{border-color:rgba(0,217,165,.55);background:rgba(0,217,165,.09)}
+.rit-card.g-rf .rit-num{color:#00D9A5}
+.rit-card.g-ft{border-color:rgba(168,85,247,.55);background:rgba(168,85,247,.09)}
+.rit-card.g-ft .rit-num{color:#a855f7}
+.rit-card.g-sw{border-color:rgba(255,43,61,.55);background:rgba(255,43,61,.09)}
+.rit-card.g-sw .rit-num{color:#ff2b3d}
 /* ── PHONES ONLY (600 px wide and narrower): tablets never see these rules ── */
 @media (max-width:600px){
   #stage{align-items:flex-start;padding:108px 14px 84px}
@@ -211,22 +220,22 @@ footer{
     <div class="arena-sub">Train Your Mind. Build Your Skills.</div>
 
     <div class="group-label" style="animation-delay:1.05s">Reaction Velocity</div>
-    <a class="rit-card" href="vr-reaction-speed.html" style="animation-delay:1.12s">
+    <a class="rit-card g-rs" href="vr-reaction-speed.html" style="animation-delay:1.12s">
       <div class="rit-num">⚡ Reaction Speed</div>
       <div class="rit-name">Hold HOME · lift · tap</div>
       <div class="rit-note">When the target lights up, lift off and tap it — a true reaction, in BPM. Included with your access.</div>
     </a>
-    <a class="rit-card" href="vr-reactific.html" style="animation-delay:1.19s">
+    <a class="rit-card g-rf" href="vr-reactific.html" style="animation-delay:1.19s">
       <div class="rit-num">🔴 Reactific</div>
       <div class="rit-name">Tap only on red</div>
       <div class="rit-note">Plays at your Reaction Speed BPM. Included with your access.</div>
     </a>
-    <a class="rit-card" href="dynamic-memory-the-fortress.html" style="animation-delay:1.26s">
+    <a class="rit-card g-ft" href="dynamic-memory-the-fortress.html" style="animation-delay:1.26s">
       <div class="rit-num">🏰 The Fortress</div>
       <div class="rit-name">The 2-1-2 zone chain</div>
       <div class="rit-note">Watch the chain light up, then repeat it back. Every round adds one more ball.</div>
     </a>
-    <a class="rit-card" href="vr-swipe-it.html" style="animation-delay:1.33s">
+    <a class="rit-card g-sw" href="vr-swipe-it.html" style="animation-delay:1.33s">
       <div class="rit-num">👆 Swipe It</div>
       <div class="rit-name">Flash · remember · swipe</div>
       <div class="rit-note">An arrow flashes once at your Reaction Speed BPM, in a new spot — swipe where it was, the way it pointed.</div>
