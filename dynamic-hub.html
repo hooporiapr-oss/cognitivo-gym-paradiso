@@ -191,6 +191,10 @@ footer{
   border:1px solid rgba(255,255,255,.3);background:rgba(0,0,0,.45);color:#fff;font-size:.72rem;
   font-weight:900;letter-spacing:.04em;cursor:pointer;backdrop-filter:blur(4px);
 }
+/* ── PHONES ONLY (600 px wide and narrower): tablets never see these rules ── */
+@media (max-width:600px){
+  #stage{align-items:flex-start;padding:108px 14px 84px}
+}
 </style>
 <!-- The player: one name for every game (see jugador.js) -->
 <script>window.JUGADOR={modo:'hub',hub:'dynamic-hub.html',escuela:'hoop-school',categoria:'ritnome-category',tablas:['dynamic_memory_quarter_standings','hooporia_4qtr_standings']};</script>
