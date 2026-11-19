@@ -351,7 +351,7 @@ function pbLoad(){
   pbRows=null;var el=document.getElementById('pbMsg');if(el)el.hidden=true;
   var n=String(currentPlayerName||'').trim();if(!n)return;
   var sc=sessionStorage.getItem('ritnome-school')||'';
-  fetch(SB_URL+'/rest/v1/'+SB_TABLE+'?select=speed,score&hidden=is.false&school_name=eq.'+encodeURIComponent(sc)+'&player_name=ilike.'+encodeURIComponent(n.replace(/[*%,()]/g,'')),
+  fetch(SB_URL+'/rest/v1/'+SB_TABLE+'?select=speed,score&hidden=is.false&or=(mode.is.null,mode.eq.tap)&school_name=eq.'+encodeURIComponent(sc)+'&player_name=ilike.'+encodeURIComponent(n.replace(/[*%,()]/g,'')),
     {headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}})
     .then(function(r){return r.ok?r.json():null}).then(function(x){pbRows=Array.isArray(x)?x:null}).catch(function(){});
 }
@@ -1147,7 +1147,7 @@ function openProgress(from){
   if(!n){$('progBody').innerHTML='<div class="box-empty">Type the player\'s name first.</div>';return}
   $('progBody').innerHTML='<div class="box-empty">Loading…</div>';
   var school=sessionStorage.getItem('ritnome-school')||'';
-  var base=SB_URL+'/rest/v1/vr_reactific_standings?hidden=is.false'+
+  var base=SB_URL+'/rest/v1/vr_reactific_standings?hidden=is.false&or=(mode.is.null,mode.eq.tap)'+
     '&school_name=eq.'+encodeURIComponent(school)+'&player_name=ilike.'+encodeURIComponent(n.replace(/[*%,()]/g,''));
   var h={headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}};
   fetch(base+'&select=speed,score,logged_at,admin_id&order=admin_id.asc',h)
