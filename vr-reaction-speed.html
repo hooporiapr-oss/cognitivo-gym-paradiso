@@ -133,6 +133,25 @@ html.plain #target-inner{background:radial-gradient(circle at 35% 35%,#ff6b7f,#f
 #screen-speed .sp-top{font-size:.8rem;letter-spacing:.24em;text-transform:uppercase;color:#9fb3c8;margin-bottom:6px}
 #screen-speed .sp-sub{font-size:.85rem;color:#cbd5e1;margin-top:8px}
 #screen-speed .sp-go{margin-top:30px;font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:#9fb3c8}
+/* Your Ritnome BPM: a conga plays the player's BPM for 10 beats, then the countdown */
+#screen-speed .sp-top{font-size:1.15rem;font-weight:900;color:#FFD700;letter-spacing:.16em;text-shadow:0 0 24px rgba(255,215,0,.45)}
+#conga{margin:14px 0 6px;display:flex;flex-direction:column;align-items:center}
+#congaDrums{display:flex;align-items:flex-end;justify-content:center;gap:min(3vw,18px)}
+#congaDrums .drum{transform-origin:50% 100%;transition:transform .07s ease-out}
+#congaDrums .drum svg{display:block;width:min(22vw,118px);height:auto}
+#congaDrums .drum:nth-child(1) svg{width:min(24vw,128px)}   /* tumba: the low, big one */
+#congaDrums .drum:nth-child(3) svg{width:min(19vw,102px)}   /* quinto: the high, small one */
+#congaDrums .drum.hit{transform:scale(1.07,.94)}
+#congaDrums .head{transition:fill .07s}
+#congaDrums .drum.hit .head{fill:#fff6d6}
+#congaDrums .ring{opacity:0;transform-origin:100px 40px}
+#congaDrums .drum.hit .ring{animation:congaRing .45s ease-out}
+@keyframes congaRing{0%{opacity:.9;transform:scale(.6)}100%{opacity:0;transform:scale(1.6)}}
+#congaDots{display:flex;gap:7px;margin-top:12px}
+#congaDots i{width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,.14);transition:background .1s,box-shadow .1s}
+#congaDots i.on{background:#FFD700;box-shadow:0 0 10px rgba(255,215,0,.8)}
+#congaNum{font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;color:#9fb3c8;margin-top:8px;min-height:1em}
+#spCountWrap[hidden],#conga[hidden]{display:none}
 #spCount{font-size:5.5rem;font-weight:900;color:#fff;line-height:1;text-shadow:0 0 40px rgba(255,30,60,.8);margin-top:6px}
 #countdown{position:fixed;inset:0;z-index:56;display:none;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,#180000 0%,#000 70%)}
 #bigCount{font-size:8rem;font-weight:900;color:#ff1e3c;text-shadow:0 0 60px rgba(255,30,60,.9)}
@@ -260,12 +279,59 @@ html.plain #target-inner{background:radial-gradient(circle at 35% 35%,#ff6b7f,#f
 
 <!-- FREE TAP: YOUR SPEED -->
 <div id="screen-speed" role="status" aria-live="polite">
-  <div class="sp-top" id="spTop">Your speed</div>
+  <div class="sp-top" id="spTop">Your Ritnome BPM</div>
   <div class="final-num" id="spBpm">0</div>
   <div class="final-label">BPM</div>
   <div class="sp-sub" id="spSub"></div>
-  <div class="sp-go" id="spGo">25 targets at your speed · starting in</div>
-  <div id="spCount">5</div>
+  <div id="conga" aria-hidden="true">
+    <div id="congaDrums">
+      <div class="drum">
+        <svg viewBox="0 0 200 250">
+          <ellipse class="ring" cx="100" cy="40" rx="62" ry="16" fill="none" stroke="#FFD700" stroke-width="4"/>
+          <path d="M48 44 C40 110 52 170 66 236 L134 236 C148 170 160 110 152 44 Z" fill="#a0522d"/>
+          <path d="M58 44 C52 110 62 170 74 236 L86 236 C78 170 70 110 74 44 Z" fill="#c8743f" opacity=".7"/>
+          <path d="M48 44 C40 110 52 170 66 236 L134 236 C148 170 160 110 152 44 Z" fill="none" stroke="#5c2c12" stroke-width="3"/>
+          <rect x="44" y="40" width="112" height="12" rx="5" fill="#d9a441" stroke="#7a5414" stroke-width="2"/>
+          <path d="M46 120 Q100 132 154 120" fill="none" stroke="#d9a441" stroke-width="7"/>
+          <path d="M58 206 Q100 216 142 206" fill="none" stroke="#d9a441" stroke-width="7"/>
+          <g fill="#7a5414"><circle cx="56" cy="46" r="3"/><circle cx="78" cy="47" r="3"/><circle cx="100" cy="47" r="3"/><circle cx="122" cy="47" r="3"/><circle cx="144" cy="46" r="3"/></g>
+          <ellipse class="head" cx="100" cy="40" rx="54" ry="13" fill="#f1dcb0" stroke="#7a5414" stroke-width="3"/>
+            </svg>
+      </div>
+      <div class="drum">
+        <svg viewBox="0 0 200 250">
+          <ellipse class="ring" cx="100" cy="40" rx="62" ry="16" fill="none" stroke="#FFD700" stroke-width="4"/>
+          <path d="M48 44 C40 110 52 170 66 236 L134 236 C148 170 160 110 152 44 Z" fill="#a0522d"/>
+          <path d="M58 44 C52 110 62 170 74 236 L86 236 C78 170 70 110 74 44 Z" fill="#c8743f" opacity=".7"/>
+          <path d="M48 44 C40 110 52 170 66 236 L134 236 C148 170 160 110 152 44 Z" fill="none" stroke="#5c2c12" stroke-width="3"/>
+          <rect x="44" y="40" width="112" height="12" rx="5" fill="#d9a441" stroke="#7a5414" stroke-width="2"/>
+          <path d="M46 120 Q100 132 154 120" fill="none" stroke="#d9a441" stroke-width="7"/>
+          <path d="M58 206 Q100 216 142 206" fill="none" stroke="#d9a441" stroke-width="7"/>
+          <g fill="#7a5414"><circle cx="56" cy="46" r="3"/><circle cx="78" cy="47" r="3"/><circle cx="100" cy="47" r="3"/><circle cx="122" cy="47" r="3"/><circle cx="144" cy="46" r="3"/></g>
+          <ellipse class="head" cx="100" cy="40" rx="54" ry="13" fill="#f1dcb0" stroke="#7a5414" stroke-width="3"/>
+            </svg>
+      </div>
+      <div class="drum">
+        <svg viewBox="0 0 200 250">
+          <ellipse class="ring" cx="100" cy="40" rx="62" ry="16" fill="none" stroke="#FFD700" stroke-width="4"/>
+          <path d="M48 44 C40 110 52 170 66 236 L134 236 C148 170 160 110 152 44 Z" fill="#a0522d"/>
+          <path d="M58 44 C52 110 62 170 74 236 L86 236 C78 170 70 110 74 44 Z" fill="#c8743f" opacity=".7"/>
+          <path d="M48 44 C40 110 52 170 66 236 L134 236 C148 170 160 110 152 44 Z" fill="none" stroke="#5c2c12" stroke-width="3"/>
+          <rect x="44" y="40" width="112" height="12" rx="5" fill="#d9a441" stroke="#7a5414" stroke-width="2"/>
+          <path d="M46 120 Q100 132 154 120" fill="none" stroke="#d9a441" stroke-width="7"/>
+          <path d="M58 206 Q100 216 142 206" fill="none" stroke="#d9a441" stroke-width="7"/>
+          <g fill="#7a5414"><circle cx="56" cy="46" r="3"/><circle cx="78" cy="47" r="3"/><circle cx="100" cy="47" r="3"/><circle cx="122" cy="47" r="3"/><circle cx="144" cy="46" r="3"/></g>
+          <ellipse class="head" cx="100" cy="40" rx="54" ry="13" fill="#f1dcb0" stroke="#7a5414" stroke-width="3"/>
+            </svg>
+      </div>
+    </div>
+    <div id="congaDots"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <div id="congaNum"></div>
+  </div>
+  <div id="spCountWrap" hidden>
+    <div class="sp-go" id="spGo">25 targets at your speed · starting in</div>
+    <div id="spCount">5</div>
+  </div>
 </div>
 
 <!-- END -->
@@ -750,7 +816,7 @@ var TX={
     ruleFree:'<b>Free Tap.</b> First a <b>speed check</b>: 10 targets with no beat — each waits for you, tap it and the next one appears. That measures <b>your BPM</b>. Then the game opens at your speed for <b>25 targets</b>.',
     locked:'play Free Tap first to unlock', open:'your Free Tap speed · − / + or type to change',
     check:'SPEED CHECK · 10 TAPS', ready:'GET READY...',
-    spTop:'Your speed', spGo:'25 targets at your speed · starting in',
+    spTop:'Your Ritnome BPM', spGo:'25 targets at your speed · starting in',
     taps:function(s){return '10 taps in '+s+'s'}, newBest:function(b){return 'NEW BEST (was '+b+')'}, yourBest:function(b){return 'your best: '+b+' BPM'},
     ns_up:function(h,t,n){return h+'/'+t+' — ready for '+n+' BPM?'},
     ns_down:function(h,t,n){return h+'/'+t+' — try '+n+' BPM next'},
@@ -772,7 +838,7 @@ var TX={
     ruleFree:'<b>Toque Libre.</b> Primero una <b>prueba de velocidad</b>: 10 objetivos sin pulso — cada uno te espera, tócalo y aparece el próximo. Eso mide <b>tu BPM</b>. Luego el juego empieza a tu velocidad con <b>25 objetivos</b>.',
     locked:'juega Toque Libre primero para desbloquear', open:'tu velocidad de Toque Libre · − / + o escribe para cambiar',
     check:'PRUEBA DE VELOCIDAD · 10 TOQUES', ready:'PREPÁRATE...',
-    spTop:'Tu velocidad', spGo:'25 objetivos a tu velocidad · empieza en',
+    spTop:'Tu BPM Ritnome', spGo:'25 objetivos a tu velocidad · empieza en',
     taps:function(s){return '10 toques en '+s+'s'}, newBest:function(b){return 'NUEVO RÉCORD (antes '+b+')'}, yourBest:function(b){return 'tu récord: '+b+' BPM'},
     ns_up:function(h,t,n){return h+'/'+t+' — ¿listo para '+n+' BPM?'},
     ns_down:function(h,t,n){return h+'/'+t+' — prueba '+n+' BPM'},
@@ -863,7 +929,7 @@ if(fsg)fsg.onclick=async function(){try{if(!document.fullscreenElement)await doc
 })();
 
 function msg(t,c){var e=$('msg');e.textContent=t;e.className=c||'watch'}
-function clrT(){timers.forEach(clearTimeout);timers=[]}
+function clrT(){timers.forEach(clearTimeout);timers=[];congaStop()}
 function bpmFromMs(v){return v?Math.round(60000/v):0}
 function ripple(x,y){var r=document.createElement('div');r.className='ripple';r.style.left=x+'px';r.style.top=y+'px';r.style.width='50px';r.style.height='50px';document.body.appendChild(r);setTimeout(function(){r.remove()},520)}
 function flash(){var f=$('flash');f.style.background='rgba(255,30,60,.12)';f.style.opacity='1';setTimeout(function(){f.style.opacity='0'},100)}
@@ -910,7 +976,27 @@ function startFreeGame(){
   $('spBpm').textContent=freeBPM;
   $('spSub').textContent=tx('taps')(secs.toFixed(1))+(newBest?(prevBPM?' · '+tx('newBest')(prevBPM):''):' · '+tx('yourBest')(prevBPM));
   var n=5;$('spCount').textContent=n;
+  // First the conga plays the player's BPM for 10 beats (heard and seen),
+  // then the 5-4-3-2-1 countdown, then the 25 targets at that speed.
+  $('conga').hidden=false;$('spCountWrap').hidden=true;$('congaNum').textContent='';
+  var dots=$('congaDots').children;for(var d=0;d<dots.length;d++)dots[d].classList.remove('on');
   $('screen-speed').style.display='flex';
+  var beatMs=60000/freeBPM, lead=700, seq=congaSeq(CONGA_BEATS);
+  congaPlay(seq,freeBPM,lead/1000);
+  var drums=$('congaDrums').children;
+  for(var b=0;b<CONGA_BEATS;b++)(function(b){
+    timers.push(setTimeout(function(){
+      if(phase!=='running')return;
+      var c=drums[seq[b]];c.classList.remove('hit');void c.offsetWidth;c.classList.add('hit');
+      dots[b].classList.add('on');$('congaNum').textContent=(b+1)+' / '+CONGA_BEATS;
+      timers.push(setTimeout(function(){c.classList.remove('hit')},Math.min(160,beatMs*0.45)));
+    },lead+b*beatMs));
+  })(b);
+  timers.push(setTimeout(function(){
+    if(phase!=='running')return;
+    $('conga').hidden=true;$('spCountWrap').hidden=false;
+    timers.push(setTimeout(tick,1000));
+  },lead+CONGA_BEATS*beatMs));
   function tick(){
     if(phase!=='running')return;
     n--;
@@ -918,7 +1004,6 @@ function startFreeGame(){
     $('spCount').textContent=n;
     timers.push(setTimeout(tick,1000));
   }
-  timers.push(setTimeout(tick,1000));
 }
 
 function nextTarget(){
@@ -1017,6 +1102,37 @@ function beatClick(){
     g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(0.35,t+0.005);g.gain.exponentialRampToValueAtTime(0.0001,t+0.09);
     o.connect(g);g.connect(actx.destination);o.start(t);o.stop(t+0.1);
     window.__beats=(window.__beats||0)+1;
+  }catch(e){}
+}
+// THE CONGAS — after the 10-tap check, 10 conga hits at the player's own BPM
+// (Your Ritnome BPM): three drums — tumba (low), conga (middle), quinto
+// (high) — one drum per beat in a random order, never the same drum twice
+// in a row. Scheduled on the audio clock so the beat stays exact.
+var CONGA_BEATS=10;
+var CONGA_HZ=[196,262,349];   // tumba, conga, quinto
+function congaSeq(n){var a=[],l=-1;for(var i=0;i<n;i++){var d;do{d=Math.floor(Math.random()*3)}while(d===l);a.push(d);l=d}return a}
+function congaHit(t,d){
+  var f=CONGA_HZ[d];
+  var o=actx.createOscillator(), g=actx.createGain();
+  o.type='sine';o.frequency.setValueAtTime(f*1.35,t);o.frequency.exponentialRampToValueAtTime(f,t+0.03);o.frequency.exponentialRampToValueAtTime(f*0.92,t+0.3);
+  g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(0.7,t+0.004);g.gain.exponentialRampToValueAtTime(0.0001,t+0.34);
+  o.connect(g);g.connect(actx.destination);o.start(t);o.stop(t+0.36);congaNodes.push(o);
+  // the hand slapping the skin: a very short bright noise
+  var len=Math.floor(actx.sampleRate*0.03), buf=actx.createBuffer(1,len,actx.sampleRate), ch=buf.getChannelData(0);
+  for(var i=0;i<len;i++)ch[i]=(Math.random()*2-1)*(1-i/len);
+  var nz=actx.createBufferSource(), bp=actx.createBiquadFilter(), ng=actx.createGain();
+  nz.buffer=buf;bp.type='bandpass';bp.frequency.value=1500+d*600;bp.Q.value=1.2;ng.gain.value=0.35;
+  nz.connect(bp);bp.connect(ng);ng.connect(actx.destination);nz.start(t);congaNodes.push(nz);
+}
+var congaNodes=[];
+function congaStop(){congaNodes.forEach(function(n){try{n.stop()}catch(e){}});congaNodes=[]}   // leaving mid-beat stops the drum
+function congaPlay(seq,bpm,delay){
+  if(!actx)return;
+  try{
+    if(actx.state==='suspended')actx.resume();
+    congaStop();var t0=actx.currentTime+delay, step=60/bpm;
+    for(var i=0;i<seq.length;i++)congaHit(t0+i*step,seq[i]);
+    window.__congas=(window.__congas||0)+seq.length;window.__congaSeq=seq;
   }catch(e){}
 }
 function showBeatSw(){
