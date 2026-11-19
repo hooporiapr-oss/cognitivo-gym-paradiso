@@ -652,7 +652,7 @@ $('closeBoxBtn').onclick=function(){
   $(standingsReturnScreen).style.display='flex';
 };
 $('nextPlayerBtn').addEventListener('click',function(){
-  currentPlayerName='';choseFree=false;
+  currentPlayerName='';choseFree=false;choseBox=false;
   $('playerNameInputMain').value='';
   phase='idle';
   $('screen-end').style.display='none';
@@ -707,7 +707,7 @@ function pickBox(){
   document.querySelector('.speed-btn.free').classList.remove('active');$('bpmBox').classList.add('active');
   $('ruleT').innerHTML=tx('ruleBeat');
 }
-document.querySelector('.speed-btn.free').onclick=function(){choseFree=true;pickFree()};
+document.querySelector('.speed-btn.free').onclick=function(){choseFree=true;choseBox=false;pickFree()};
 
 // The BPM box stays locked until the player has done a Free Tap. Their
 // measured speed is kept on this device, per player name, and the box
@@ -738,7 +738,7 @@ function askBestFree(n){
 // Free Tap picked by hand stays picked: a late answer about the player's
 // saved speed only unlocks the box, it never switches the choice — and
 // nothing on the start screen changes once a game is under way.
-var choseFree=false;
+var choseFree=false, choseBox=false;   // choseBox: a set speed picked by hand on this start screen
 function refreshBox(fromDb){
   if(phase==='running'||$('screen-intro').style.display==='none')return;
   var n=$('playerNameInputMain').value, v=n.trim()?savedFreeBPM(n):0;
@@ -755,11 +755,11 @@ function refreshBox(fromDb){
   inp.disabled=false;box.classList.remove('locked');
   if(wasLocked||!inp.value)inp.value=v;   // a speed the player already typed is kept
   $('bpmNote').textContent=tx('open');
-  if(!choseFree)pickBox();
+  if(!choseBox)pickFree();   // the game always starts with the 10-tap test; a set speed only when picked by hand
 }
 var nameTimer=null;
 $('playerNameInputMain').addEventListener('input',function(){
-  choseFree=false;$('bpmInput').value='';$('bpmInput').disabled=true;   // a new name starts from that player's own default
+  choseFree=false;choseBox=false;$('bpmInput').value='';$('bpmInput').disabled=true;   // a new name starts from that player's own default
   refreshBox(true);                                   // this device's copy at once
   clearTimeout(nameTimer);nameTimer=setTimeout(function(){refreshBox()},500);   // the database once they stop typing
 });
@@ -769,12 +769,12 @@ $('playerNameInputMain').addEventListener('input',function(){
 function stepBPM(d){
   if($('bpmInput').disabled)return;
   var v=bpmFromBox()+d; v=Math.max(BPM_MIN,Math.min(BPM_MAX,v));
-  choseFree=false;$('bpmInput').value=v; pickBox();
+  choseFree=false;choseBox=true;$('bpmInput').value=v; pickBox();
 }
 $('bpmDown').addEventListener('click',function(e){e.preventDefault();stepBPM(-5)});
 $('bpmUp').addEventListener('click',function(e){e.preventDefault();stepBPM(5)});
 document.addEventListener('DOMContentLoaded',function(){setTimeout(refreshBox,0)});   // after the player's name is filled in (jugador.js)
-$('bpmInput').addEventListener('focus',function(){choseFree=false;pickBox()});
+$('bpmInput').addEventListener('focus',function(){choseFree=false;choseBox=true;pickBox()});
 $('bpmInput').addEventListener('input',pickBox);
 $('bpmInput').addEventListener('change',function(){$('bpmInput').value=bpmFromBox();pickBox()});
 $('bpmInput').addEventListener('keydown',function(e){if(e.key==='Enter'){$('bpmInput').value=bpmFromBox();pickBox();$('bpmInput').blur()}});
@@ -870,7 +870,7 @@ function suggestNext(bpm,hits,total){
     $('screen-end').style.display='none';
     $('hitMissToggle').classList.remove('open');$('hitMissDetail').classList.remove('open');
     $('nextSpeed').style.display='none';
-    choseFree=false;$('bpmInput').disabled=false;$('bpmBox').classList.remove('locked');$('bpmInput').value=next;pickBox();
+    choseFree=false;choseBox=true;$('bpmInput').disabled=false;$('bpmBox').classList.remove('locked');$('bpmInput').value=next;pickBox();
     startDrill();
   };
   $('nextSpeed').style.display='block';
