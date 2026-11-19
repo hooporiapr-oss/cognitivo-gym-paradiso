@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<script>
+if (sessionStorage.getItem('ritnome-gate-pass') !== '1') { window.location.replace('index.html'); }
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<title>Ritnome | Cognitivo Gym</title>
+<!-- RITNOME — our conga groove (three congas: tumba, conga, quinto) played live at
+     any BPM, 40 to 200: − / + (hold to keep going), the bar, or tap the beat in.
+     A warm-up station before the games: kids clap, march or tap along.
+     Opens at the player's own Ritnome BPM (Reaction Speed's Free Tap) when there is one.
+     Every sound is made in the page from the shape of a drum skin — no recordings.
+     (ritnome.html is the earlier Ritnome game, kept as it was.) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;600;800&display=swap">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+/* Layout: one stage — the BPM dial on top, three congas in the light, the transport below. */
+:root{
+  color-scheme:dark;
+  --stage:#0d0806;        /* night stage */
+  --stage-2:#1c110b;      /* warm floor glow */
+  --wood:#a0522d;         /* conga shell */
+  --gold:#ffcc33;         /* the beat */
+  --ink:#f6efe6;          /* text */
+  --muted:#b8a796;        /* captions */
+  --line:rgba(255,204,51,.28);
+  --display:'Archivo Black',Impact,'Arial Black',sans-serif;
+  --body:'Archivo',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+html,body{height:100%}
+body{background:radial-gradient(120% 80% at 50% 62%,var(--stage-2) 0%,var(--stage) 62%);color:var(--ink);font-family:var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:18px;
+  display:flex;flex-direction:column;align-items:center;gap:14px;overflow-x:hidden;-webkit-user-select:none;user-select:none}
+.top{width:100%;max-width:720px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.exit{font:800 .74rem var(--body);letter-spacing:.08em;text-transform:uppercase;padding:8px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.28);color:var(--ink);text-decoration:none;background:rgba(0,0,0,.35)}
+.who{font-size:.85rem;color:var(--muted);text-align:center;min-height:1.2em}
+.who button{margin-left:8px;font:800 .72rem var(--body);letter-spacing:.06em;padding:5px 12px;border-radius:999px;border:1px solid var(--line);background:rgba(255,204,51,.08);color:var(--gold);cursor:pointer}
+.who button[hidden]{display:none}
+.brand{font-family:var(--display);font-size:1.5rem;letter-spacing:.06em}
+.brand span{color:var(--gold)}
+.lang{display:flex;gap:4px}
+.lang button{font:800 .72rem var(--body);letter-spacing:.08em;padding:6px 10px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer}
+.lang button[aria-pressed="true"]{background:var(--gold);color:#1a0f08;border-color:var(--gold)}
+.dial{display:flex;align-items:center;gap:clamp(12px,4vw,28px);margin-top:4px}
+.step{width:clamp(58px,15vw,78px);height:clamp(58px,15vw,78px);border-radius:50%;border:2px solid var(--line);background:rgba(255,204,51,.06);color:var(--gold);font:800 2.2rem/1 var(--body);cursor:pointer;touch-action:manipulation}
+.step:active{background:rgba(255,204,51,.2)}
+.num{text-align:center;min-width:3.2ch}
+#bpm{font-family:var(--display);font-size:clamp(4.6rem,20vw,7.5rem);line-height:.9;color:var(--gold);font-variant-numeric:tabular-nums;text-shadow:0 0 34px rgba(255,204,51,.35)}
+.num small{display:block;font:800 .8rem var(--body);letter-spacing:.3em;color:var(--muted);margin-top:4px}
+#slider{width:min(560px,100%);accent-color:var(--gold);height:28px}
+.marks{width:min(560px,100%);display:flex;justify-content:space-between;font-size:.68rem;color:var(--muted);font-variant-numeric:tabular-nums;margin-top:-10px}
+.drums{display:flex;align-items:flex-end;justify-content:center;gap:clamp(10px,3vw,26px);margin-top:6px}
+.drum{display:flex;flex-direction:column;align-items:center;gap:6px}
+.drum svg{display:block;height:auto;transform-origin:50% 100%;transition:transform .06s ease-out}
+.drum:nth-child(1) svg{width:clamp(92px,25vw,150px)}
+.drum:nth-child(2) svg{width:clamp(80px,22vw,130px)}
+.drum:nth-child(3) svg{width:clamp(68px,18vw,110px)}
+.drum label{font:800 .66rem var(--body);letter-spacing:.18em;color:var(--muted);text-transform:uppercase}
+.drum.hit svg{transform:scale(1.06,.94)}
+.drum .head{transition:fill .06s}
+.drum.hit .head{fill:#fff3cf}
+.drum.slap .head{fill:#fff}
+.drum .ring{opacity:0;transform-origin:100px 40px}
+.drum.hit .ring{animation:ring .4s ease-out}
+@keyframes ring{0%{opacity:.9;transform:scale(.6)}100%{opacity:0;transform:scale(1.6)}}
+.beats{display:flex;gap:10px}
+.beats i{width:14px;height:14px;border-radius:50%;background:rgba(255,255,255,.12);transition:background .05s,box-shadow .05s}
+.beats i.on{background:var(--gold);box-shadow:0 0 12px rgba(255,204,51,.8)}
+.beats i:first-child.on{background:#fff}
+.transport{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+#play{font:800 1.15rem var(--body);letter-spacing:.12em;padding:16px 38px;border-radius:999px;border:0;background:var(--gold);color:#1a0f08;cursor:pointer;min-width:210px;box-shadow:0 6px 28px rgba(255,204,51,.3)}
+#play.on{background:transparent;color:var(--gold);border:2px solid var(--gold);box-shadow:none}
+#tap{font:800 .9rem var(--body);letter-spacing:.1em;padding:16px 22px;border-radius:999px;border:2px solid var(--line);background:transparent;color:var(--ink);cursor:pointer}
+button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+.hint{font-size:.8rem;color:var(--muted);text-align:center;max-width:46ch;line-height:1.45}
+@media (prefers-reduced-motion:reduce){.drum svg,.drum .head{transition:none}.drum.hit .ring{animation:none}.drum.hit svg{transform:none}}
+</style>
+</head>
+<body>
+<div class="top">
+  <a class="exit" id="exit" href="dynamic-hub.html">← Gym</a>
+  <div class="brand">RIT<span>NOME</span></div>
+  <div class="lang"><button type="button" id="es" aria-pressed="true">ES</button><button type="button" id="en" aria-pressed="false">EN</button></div>
+</div>
+
+<div class="dial">
+  <button class="step" id="down" type="button" aria-label="Slower">−</button>
+  <div class="num"><div id="bpm" aria-live="polite">90</div><small>BPM</small></div>
+  <button class="step" id="up" type="button" aria-label="Faster">+</button>
+</div>
+<div class="who" id="who"></div>
+<input id="slider" type="range" min="40" max="200" step="1" value="90" aria-label="BPM">
+<div class="marks"><span>40</span><span>80</span><span>120</span><span>160</span><span>200</span></div>
+
+<div class="drums" id="drums"></div>
+<div class="beats" id="beats"><i></i><i></i><i></i><i></i></div>
+
+<div class="transport">
+  <button id="play" type="button">▶ TOCAR</button>
+  <button id="tap" type="button">👆 MARCA EL RITMO</button>
+</div>
+<div class="hint" id="hint">Sube y baja el BPM con − / + o la barra — la conga cambia al instante. «Marca el ritmo»: toca 4 veces al pulso y el Ritnome lo sigue.</div>
+
+<script>
+// ═══ RITNOME — our conga groove, played at any BPM, adjustable live like a metronome ═══
+// Three congas: tumba (low, the pulse on every beat), conga (middle, heel-tip-slap
+// pattern) and quinto (high, the boom-ch-boom-chick accents and the rolls).
+// Every sound is made right here from the shape of a drum skin — no recordings.
+var SR=44100, actx=null, master=null, BUF=null;
+var F0=[178,233,311];
+var MODES=[[1.00,1.00,1.0],[1.59,.55,.55],[2.14,.32,.40],[2.30,.22,.35],[2.65,.14,.28],[2.92,.09,.22]];
+var KIND={open:{dur:.55,dec:.20},slap:{dur:.22,dec:.045},tip:{dur:.08,dec:.018},heel:{dur:.09,dec:.022}};
+var seed=7;function rnd(){seed=(seed*16807)%2147483647;return seed/2147483647}
+function bandNoise(n,f0,q){   // short noise through a band-pass (the hand on the skin)
+  var out=new Float32Array(n),w=2*Math.PI*f0/SR,al=Math.sin(w)/(2*q),b0=al,b2=-al,a0=1+al,a1=-2*Math.cos(w),a2=1-al,x1=0,x2=0,y1=0,y2=0;
+  for(var i=0;i<n;i++){var x=rnd()*2-1,y=(b0*x+b2*x2-a1*y1-a2*y2)/a0;x2=x1;x1=x;y2=y1;y1=y;out[i]=y}
+  return out;
+}
+function makeStroke(d,kind,variant){
+  var k=KIND[kind],n=Math.floor(SR*k.dur),y=new Float32Array(n),f0=F0[d]*(1+(variant-.5)*.008);
+  for(var m=0;m<MODES.length;m++){
+    var r=MODES[m][0],a=MODES[m][1],dk=MODES[m][2],ph=rnd()*6.28,tau=k.dec*dk;
+    for(var i=0;i<n;i++){var t=i/SR,bend=1+.06*Math.exp(-t/.015);ph+=2*Math.PI*f0*r*bend/SR;y[i]+=a*Math.sin(ph)*Math.exp(-t/tau)}
+  }
+  for(var i=0;i<n;i++)y[i]*=1-Math.exp(-(i/SR)/.0012);
+  var nm,amp,fc,td;
+  if(kind==='slap'){nm=.06;amp=2.4;fc=3000;td=.012;for(var i=0;i<n;i++)y[i]*=.8}
+  else if(kind==='open'){nm=.02;amp=.5;fc=1800;td=.004}
+  else{nm=.015;amp=.4;fc=1300;td=.003}
+  var m2=Math.floor(SR*nm),nz=bandNoise(m2,fc,.8);
+  for(var i=0;i<m2&&i<n;i++)y[i]+=nz[i]*amp*Math.exp(-(i/SR)/td);
+  if(kind==='tip')for(var i=0;i<n;i++)y[i]*=.35;
+  if(kind==='heel')for(var i=0;i<n;i++)y[i]*=.45;
+  var b=actx.createBuffer(1,n,SR);b.copyToChannel?b.copyToChannel(y,0):b.getChannelData(0).set(y);return b;
+}
+function buildSounds(){   // two takes of every stroke on every drum, so it breathes like real hands
+  BUF={};['open','slap','tip','heel'].forEach(function(k){BUF[k]=[0,1,2].map(function(d){return [makeStroke(d,k,.2),makeStroke(d,k,.8)]})});
+}
+function play(d,kind,vel,when){
+  var s=actx.createBufferSource(),g=actx.createGain();
+  s.buffer=BUF[kind][d][rnd()<.5?0:1];g.gain.value=vel*(.93+rnd()*.12);
+  s.connect(g);g.connect(master);s.start(when);
+  var delay=Math.max(0,(when-actx.currentTime)*1000);
+  setTimeout(function(){flash(d,kind)},delay);
+}
+
+// ── The groove, one bar (16 sixteenths) at a time. pos may be a half-step (a 32nd, for rolls). ──
+var TUMBAO=[[0,'heel',.7],[2,'tip',.6],[4,'slap',.9],[6,'tip',.6],[8,'heel',.7],[10,'tip',.6],[12,'open',.85],[14,'open',.85]];
+function barEvents(k){
+  var ev=[],last=k%4===3;
+  for(var q=0;q<4;q++)if(!(last&&q===3))ev.push([q*4,0,'open',.95]);            // tumba: the pulse
+  TUMBAO.forEach(function(e){if(!(last&&e[0]>=12))ev.push([e[0],1,e[1],e[2]])}); // conga: tumbao
+  [3,6,11,14].forEach(function(p){if(!(last&&p>=12))ev.push([p,2,'slap',.75])});  // quinto: dembow accents
+  if(k%2===1&&!last){ev.push([15,2,'open',.55]);ev.push([15.5,2,'slap',.65])}    // short roll into the next bar
+  if(last){                                                                        // big roll across the three drums
+    for(var i=0;i<8;i++){var d=[2,2,2,1,1,1,0,0][i];ev.push([12+i*.5,d,i%2?'slap':'open',.4+.6*i/7])}
+  }
+  return ev;
+}
+var bpm=90, running=false, step=0, nextTime=0, timer=null, bar=[];
+function sixteenth(){return 60/bpm/4}
+function schedule(){
+  while(nextTime<actx.currentTime+.12){
+    var inBar=step%16;
+    if(inBar===0)bar=barEvents(Math.floor(step/16));
+    var st=sixteenth(),t=nextTime;
+    bar.forEach(function(e){if(e[0]>=inBar&&e[0]<inBar+1)play(e[1],e[2],e[3],t+(e[0]-inBar)*st)});
+    if(inBar%4===0)(function(b,when){setTimeout(function(){beatDot(b)},Math.max(0,(when-actx.currentTime)*1000))})(inBar/4,t);
+    nextTime+=st;step++;
+  }
+}
+function start(){
+  if(!actx){var A=window.AudioContext||window.webkitAudioContext;actx=new A();
+    var comp=actx.createDynamicsCompressor();comp.threshold.value=-14;comp.ratio.value=3;
+    master=actx.createGain();master.gain.value=.55;master.connect(comp);comp.connect(actx.destination);buildSounds()}
+  if(actx.state==='suspended')actx.resume();
+  running=true;step=0;nextTime=actx.currentTime+.08;schedule();timer=setInterval(schedule,25);
+  $('play').classList.add('on');$('play').textContent=T().stop;
+}
+function stop(){running=false;clearInterval(timer);$('play').classList.remove('on');$('play').textContent=T().play;beatDot(-1)}
+
+// ── The BPM: − / +, hold to keep going, the bar, or tap it in. Changes land on the next sixteenth. ──
+function setBpm(v){bpm=Math.max(40,Math.min(200,Math.round(v)));$('bpm').textContent=bpm;$('slider').value=bpm;try{localStorage.setItem('ritnome-bpm',String(bpm))}catch(e){}var b=$('useMine');if(b)b.hidden=bpm===mine}
+function hold(id,dir){
+  var el=$(id),t1=null,t2=null;
+  function go(e){e.preventDefault();setBpm(bpm+dir);t1=setTimeout(function(){t2=setInterval(function(){setBpm(bpm+dir)},70)},380)}
+  function end(){clearTimeout(t1);clearInterval(t2)}
+  el.addEventListener('pointerdown',go);['pointerup','pointerleave','pointercancel'].forEach(function(n){el.addEventListener(n,end)});
+  el.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();setBpm(bpm+dir)}});
+}
+hold('down',-1);hold('up',1);
+$('slider').addEventListener('input',function(){setBpm(+this.value)});
+var taps=[];
+$('tap').addEventListener('click',function(){
+  var now=performance.now();taps=taps.filter(function(t){return now-t<2500});taps.push(now);
+  if(taps.length>=2){var g=[];for(var i=1;i<taps.length;i++)g.push(taps[i]-taps[i-1]);var avg=g.reduce(function(a,b){return a+b},0)/g.length;setBpm(60000/avg)}
+  if(taps.length>4)taps.shift();
+});
+$('play').addEventListener('click',function(){running?stop():start()});
+$('exit').addEventListener('click',function(){if(running)stop()});
+document.addEventListener('keydown',function(e){if(e.target.tagName==='INPUT')return;if(e.key==='ArrowUp'||e.key==='ArrowRight')setBpm(bpm+1);if(e.key==='ArrowDown'||e.key==='ArrowLeft')setBpm(bpm-1)});
+
+// ── The drums on stage ──
+var SVG='<svg viewBox="0 0 200 250" aria-hidden="true"><ellipse class="ring" cx="100" cy="40" rx="62" ry="16" fill="none" stroke="#ffcc33" stroke-width="4"/>'+
+  '<path d="M48 44 C40 110 52 170 66 236 L134 236 C148 170 160 110 152 44 Z" fill="#a0522d"/><path d="M58 44 C52 110 62 170 74 236 L86 236 C78 170 70 110 74 44 Z" fill="#c8743f" opacity=".7"/>'+
+  '<path d="M48 44 C40 110 52 170 66 236 L134 236 C148 170 160 110 152 44 Z" fill="none" stroke="#5c2c12" stroke-width="3"/><rect x="44" y="40" width="112" height="12" rx="5" fill="#d9a441" stroke="#7a5414" stroke-width="2"/>'+
+  '<path d="M46 120 Q100 132 154 120" fill="none" stroke="#d9a441" stroke-width="7"/><path d="M58 206 Q100 216 142 206" fill="none" stroke="#d9a441" stroke-width="7"/>'+
+  '<g fill="#7a5414"><circle cx="56" cy="46" r="3"/><circle cx="78" cy="47" r="3"/><circle cx="100" cy="47" r="3"/><circle cx="122" cy="47" r="3"/><circle cx="144" cy="46" r="3"/></g>'+
+  '<ellipse class="head" cx="100" cy="40" rx="54" ry="13" fill="#f1dcb0" stroke="#7a5414" stroke-width="3"/></svg>';
+$('drums').innerHTML=['Tumba','Conga','Quinto'].map(function(n){return '<div class="drum">'+SVG+'<label>'+n+'</label></div>'}).join('');
+var drums=$('drums').children;
+function flash(d,kind){
+  if(!running||kind==='tip')return;
+  var c=drums[d];c.classList.remove('hit','slap');void c.offsetWidth;c.classList.add('hit');if(kind==='slap')c.classList.add('slap');
+  setTimeout(function(){c.classList.remove('hit','slap')},90);
+}
+function beatDot(b){var d=$('beats').children;for(var i=0;i<4;i++)d[i].classList.toggle('on',i===b)}
+
+// ── Words: Spanish first, English on the toggle ──
+var W={es:{mine:'tu BPM Ritnome',use:'Usar mi BPM',play:'▶ TOCAR',stop:'■ PARAR',tap:'👆 MARCA EL RITMO',hint:'Sube y baja el BPM con − / + o la barra — la conga cambia al instante. «Marca el ritmo»: toca 4 veces al pulso y el Ritnome lo sigue.'},
+       en:{mine:'your Ritnome BPM',use:'Use my BPM',play:'▶ PLAY',stop:'■ STOP',tap:'👆 TAP THE BEAT',hint:'Move the BPM up and down with − / + or the bar — the congas change right away. "Tap the beat": tap 4 times on the pulse and the Ritnome follows.'}};
+var lang='es';function T(){return W[lang]}
+function setLang(l){lang=l;$('es').setAttribute('aria-pressed',l==='es');$('en').setAttribute('aria-pressed',l==='en');document.documentElement.lang=l;
+  $('play').textContent=running?T().stop:T().play;$('tap').textContent=T().tap;$('hint').textContent=T().hint;if(typeof showWho==='function')showWho();try{localStorage.setItem('rs-lang',l)}catch(e){}}
+$('es').onclick=function(){setLang('es')};$('en').onclick=function(){setLang('en')};
+function $(id){return document.getElementById(id)}
+// The player on this tablet (jugador.js keeps the name): start at their own
+// Ritnome BPM from Reaction Speed's Free Tap; otherwise the last BPM used here, or 90.
+var player='',mine=0;
+try{player=(localStorage.getItem('gym-player')||'').trim();mine=parseInt(localStorage.getItem('rv-free-bpm:'+player.toLowerCase()),10)||0}catch(e){}
+function showWho(){
+  if(!player){$('who').textContent='';return}
+  $('who').innerHTML='👤 '+player.replace(/[<>&]/g,'')+(mine?' · '+T().mine+' <b style="color:var(--gold)">'+mine+'</b><button type="button" id="useMine">'+T().use+'</button>':'');
+  var b=$('useMine');if(b){b.hidden=bpm===mine;b.onclick=function(){setBpm(mine);b.hidden=true}}
+}
+try{if(localStorage.getItem('rs-lang')==='en')setLang('en')}catch(e){}
+if(mine)setBpm(mine);else{try{var sv=parseInt(localStorage.getItem('ritnome-bpm'),10);if(sv)setBpm(sv)}catch(e){}}
+showWho();
+</script>
+</body>
+</html>
