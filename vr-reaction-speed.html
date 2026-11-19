@@ -232,7 +232,7 @@ html.plain #target-inner{background:radial-gradient(circle at 35% 35%,#ff6b7f,#f
   <div class="rule-t" id="ruleT"></div>
   <div class="speed-label" id="speedLabel">Speed</div>
   <div class="speed-row" id="speedRow">
-    <button class="speed-btn free active" data-speed="free" type="button"><span id="freeName">👆 Ritnome</span><small id="freeSub">10-tap speed check · then 25 targets at your BPM</small></button>
+    <button class="speed-btn free active" data-speed="free" type="button"><span id="freeName">👆 Ritnome BPM</span><small id="freeSub">10-tap speed check · then 25 targets at your BPM</small></button>
     <label class="bpm-box locked" id="bpmBox"><button type="button" class="bpm-step" id="bpmDown" disabled aria-label="Slower">−</button><input id="bpmInput" type="number" inputmode="numeric" min="10" max="300" step="1" value="" placeholder="—" disabled aria-label="Speed in BPM"><button type="button" class="bpm-step" id="bpmUp" disabled aria-label="Faster">+</button><span>BPM</span><small id="bpmNote">play Ritnome first to unlock</small></label>
   </div>
   <div class="sw-row">
@@ -811,7 +811,7 @@ var INTRO_I18N={
 // the language chosen on the start screen (EN / ES).
 var TX={
   en:{
-    speed:'Speed', freeName:'👆 Ritnome', freeSub:'10-tap speed check · then 25 targets at your BPM',
+    speed:'Speed', freeName:'👆 Ritnome BPM', freeSub:'10-tap speed check · then 25 targets at your BPM',
     ruleBeat:'<b>50 targets at your BPM.</b> A cell lights up — tap it before the next beat or it counts as a miss (−100). Every hit is +100, and every reaction is shown as its own beats-per-minute.',
     ruleFree:'<b>Ritnome.</b> First a <b>speed check</b>: 10 targets with no beat — each waits for you, tap it and the next one appears. That measures <b>your BPM</b>. Then the game opens at your speed for <b>25 targets</b>.',
     locked:'play Ritnome first to unlock', open:'your Ritnome speed · − / + or type to change',
@@ -833,7 +833,7 @@ var TX={
     change:function(d){return '<b>'+(d>0?'+':'')+d+' BPM</b> since the first run'}
   },
   es:{
-    speed:'Velocidad', freeName:'👆 Ritnome', freeSub:'prueba de velocidad de 10 toques · luego 25 objetivos a tu BPM',
+    speed:'Velocidad', freeName:'👆 Ritnome BPM', freeSub:'prueba de velocidad de 10 toques · luego 25 objetivos a tu BPM',
     ruleBeat:'<b>50 objetivos a tu BPM.</b> Se ilumina una celda — tócala antes del próximo pulso o cuenta como fallo (−100). Cada acierto vale +100, y cada reacción se muestra como sus propios pulsos por minuto.',
     ruleFree:'<b>Ritnome.</b> Primero una <b>prueba de velocidad</b>: 10 objetivos sin pulso — cada uno te espera, tócalo y aparece el próximo. Eso mide <b>tu BPM</b>. Luego el juego empieza a tu velocidad con <b>25 objetivos</b>.',
     locked:'juega Ritnome primero para desbloquear', open:'tu velocidad de Ritnome · − / + o escribe para cambiar',
