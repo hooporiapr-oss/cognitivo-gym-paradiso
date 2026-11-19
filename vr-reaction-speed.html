@@ -232,8 +232,8 @@ html.plain #target-inner{background:radial-gradient(circle at 35% 35%,#ff6b7f,#f
   <div class="rule-t" id="ruleT"></div>
   <div class="speed-label" id="speedLabel">Speed</div>
   <div class="speed-row" id="speedRow">
-    <button class="speed-btn free active" data-speed="free" type="button"><span id="freeName">👆 Free Tap</span><small id="freeSub">10-tap speed check · then 25 targets at your BPM</small></button>
-    <label class="bpm-box locked" id="bpmBox"><button type="button" class="bpm-step" id="bpmDown" disabled aria-label="Slower">−</button><input id="bpmInput" type="number" inputmode="numeric" min="10" max="300" step="1" value="" placeholder="—" disabled aria-label="Speed in BPM"><button type="button" class="bpm-step" id="bpmUp" disabled aria-label="Faster">+</button><span>BPM</span><small id="bpmNote">play Free Tap first to unlock</small></label>
+    <button class="speed-btn free active" data-speed="free" type="button"><span id="freeName">👆 Ritnome</span><small id="freeSub">10-tap speed check · then 25 targets at your BPM</small></button>
+    <label class="bpm-box locked" id="bpmBox"><button type="button" class="bpm-step" id="bpmDown" disabled aria-label="Slower">−</button><input id="bpmInput" type="number" inputmode="numeric" min="10" max="300" step="1" value="" placeholder="—" disabled aria-label="Speed in BPM"><button type="button" class="bpm-step" id="bpmUp" disabled aria-label="Faster">+</button><span>BPM</span><small id="bpmNote">play Ritnome first to unlock</small></label>
   </div>
   <div class="sw-row">
     <button type="button" class="beat-sw on" id="beatSw" aria-pressed="true">🔊 <span id="beatTxt">Beat: on</span></button>
@@ -270,7 +270,7 @@ html.plain #target-inner{background:radial-gradient(circle at 35% 35%,#ff6b7f,#f
 <div id="screen-prog">
   <button class="box-back-btn" id="closeProgBtn" style="margin-top:0;margin-bottom:20px">← Back</button>
   <div class="box-title" id="progTitle">MY <span>PROGRESS</span></div>
-  <div class="box-sub" id="progSub">Free Tap speed, run by run</div>
+  <div class="box-sub" id="progSub">Ritnome speed, run by run</div>
   <div class="box-section"><div id="progBody"></div></div>
 </div>
 
@@ -449,7 +449,7 @@ function renderSpeedTabs(){
   if(currentStandingsGame!=='reaction-speed'){row.style.display='none';row.innerHTML='';return}
   row.style.display='flex';
   row.innerHTML=SPEEDS.map(function(v){
-    return '<button class="standings-tab'+(v===currentStandingsSpeed?' active':'')+'" data-speed="'+v+'">'+(v==='free'?'Free Tap':v+' BPM')+'</button>';
+    return '<button class="standings-tab'+(v===currentStandingsSpeed?' active':'')+'" data-speed="'+v+'">'+(v==='free'?'Ritnome':v+' BPM')+'</button>';
   }).join('');
   row.querySelectorAll('.standings-tab').forEach(function(btn){
     btn.addEventListener('click',function(){
@@ -584,7 +584,7 @@ function renderStandingsForGame(gameKey){
   renderStandingsTabs();
   renderSpeedTabs();
   var isFreeBoard=false;
-  $('boxSub').textContent=gameConfig.label+(gameKey==='reaction-speed'?' · '+(currentStandingsSpeed==='free'?'Free Tap · at each player\'s own speed':currentStandingsSpeed+' BPM'):'')+' · Player vs. Player';
+  $('boxSub').textContent=gameConfig.label+(gameKey==='reaction-speed'?' · '+(currentStandingsSpeed==='free'?'Ritnome · at each player\'s own speed':currentStandingsSpeed+' BPM'):'')+' · Player vs. Player';
 
   var listEl=$('standingsList');
   var tapLogEl=$('standingsTapLog');
@@ -811,10 +811,10 @@ var INTRO_I18N={
 // the language chosen on the start screen (EN / ES).
 var TX={
   en:{
-    speed:'Speed', freeName:'👆 Free Tap', freeSub:'10-tap speed check · then 25 targets at your BPM',
+    speed:'Speed', freeName:'👆 Ritnome', freeSub:'10-tap speed check · then 25 targets at your BPM',
     ruleBeat:'<b>50 targets at your BPM.</b> A cell lights up — tap it before the next beat or it counts as a miss (−100). Every hit is +100, and every reaction is shown as its own beats-per-minute.',
-    ruleFree:'<b>Free Tap.</b> First a <b>speed check</b>: 10 targets with no beat — each waits for you, tap it and the next one appears. That measures <b>your BPM</b>. Then the game opens at your speed for <b>25 targets</b>.',
-    locked:'play Free Tap first to unlock', open:'your Free Tap speed · − / + or type to change',
+    ruleFree:'<b>Ritnome.</b> First a <b>speed check</b>: 10 targets with no beat — each waits for you, tap it and the next one appears. That measures <b>your BPM</b>. Then the game opens at your speed for <b>25 targets</b>.',
+    locked:'play Ritnome first to unlock', open:'your Ritnome speed · − / + or type to change',
     check:'SPEED CHECK · 10 TAPS', ready:'GET READY...',
     spTop:'Your Ritnome BPM', spGo:'25 targets at your speed · starting in',
     taps:function(s){return '10 taps in '+s+'s'}, newBest:function(b){return 'NEW BEST (was '+b+')'}, yourBest:function(b){return 'your best: '+b+' BPM'},
@@ -825,18 +825,18 @@ var TX={
     endFree:function(b,p){return 'Hits · at your speed, '+b+' BPM · '+p+' pts'}, endPts:'Total Points',
     beatOn:'Beat: on', beatOff:'Beat: off', allAges:'All',
     sizeN:'Targets: normal', sizeB:'Targets: big', tapByTap:'Tap by tap', miss:'miss',
-    progBtn:'📈 MY PROGRESS', progTitle:'MY <span>PROGRESS</span>', progSub:'Free Tap speed, run by run', back:'← Back',
+    progBtn:'📈 MY PROGRESS', progTitle:'MY <span>PROGRESS</span>', progSub:'Ritnome speed, run by run', back:'← Back',
     progNoName:'Type the player’s name first.', loading:'Loading…',
-    progNone:'No Free Tap runs yet — play Free Tap to start the line.',
-    progOne:'One Free Tap run so far — play it again to see the line.',
+    progNone:'No Ritnome runs yet — play Ritnome to start the line.',
+    progOne:'One Ritnome run so far — play it again to see the line.',
     first:'First', latest:'Latest', best:'Best', earlier:'earlier', runs:'runs',
     change:function(d){return '<b>'+(d>0?'+':'')+d+' BPM</b> since the first run'}
   },
   es:{
-    speed:'Velocidad', freeName:'👆 Toque Libre', freeSub:'prueba de velocidad de 10 toques · luego 25 objetivos a tu BPM',
+    speed:'Velocidad', freeName:'👆 Ritnome', freeSub:'prueba de velocidad de 10 toques · luego 25 objetivos a tu BPM',
     ruleBeat:'<b>50 objetivos a tu BPM.</b> Se ilumina una celda — tócala antes del próximo pulso o cuenta como fallo (−100). Cada acierto vale +100, y cada reacción se muestra como sus propios pulsos por minuto.',
-    ruleFree:'<b>Toque Libre.</b> Primero una <b>prueba de velocidad</b>: 10 objetivos sin pulso — cada uno te espera, tócalo y aparece el próximo. Eso mide <b>tu BPM</b>. Luego el juego empieza a tu velocidad con <b>25 objetivos</b>.',
-    locked:'juega Toque Libre primero para desbloquear', open:'tu velocidad de Toque Libre · − / + o escribe para cambiar',
+    ruleFree:'<b>Ritnome.</b> Primero una <b>prueba de velocidad</b>: 10 objetivos sin pulso — cada uno te espera, tócalo y aparece el próximo. Eso mide <b>tu BPM</b>. Luego el juego empieza a tu velocidad con <b>25 objetivos</b>.',
+    locked:'juega Ritnome primero para desbloquear', open:'tu velocidad de Ritnome · − / + o escribe para cambiar',
     check:'PRUEBA DE VELOCIDAD · 10 TOQUES', ready:'PREPÁRATE...',
     spTop:'Tu BPM Ritnome', spGo:'25 objetivos a tu velocidad · empieza en',
     taps:function(s){return '10 toques en '+s+'s'}, newBest:function(b){return 'NUEVO RÉCORD (antes '+b+')'}, yourBest:function(b){return 'tu récord: '+b+' BPM'},
@@ -847,10 +847,10 @@ var TX={
     endFree:function(b,p){return 'Aciertos · a tu velocidad, '+b+' BPM · '+p+' pts'}, endPts:'Puntos Totales',
     beatOn:'Pulso: sí', beatOff:'Pulso: no', allAges:'Todos',
     sizeN:'Objetivos: normales', sizeB:'Objetivos: grandes', tapByTap:'Toque a toque', miss:'fallo',
-    progBtn:'📈 MI PROGRESO', progTitle:'MI <span>PROGRESO</span>', progSub:'Velocidad de Toque Libre, juego por juego', back:'← Atrás',
+    progBtn:'📈 MI PROGRESO', progTitle:'MI <span>PROGRESO</span>', progSub:'Velocidad de Ritnome, juego por juego', back:'← Atrás',
     progNoName:'Escribe el nombre del jugador primero.', loading:'Cargando…',
-    progNone:'Todavía no hay juegos de Toque Libre — juega Toque Libre para empezar la línea.',
-    progOne:'Un juego de Toque Libre hasta ahora — juégalo otra vez para ver la línea.',
+    progNone:'Todavía no hay juegos de Ritnome — juega Ritnome para empezar la línea.',
+    progOne:'Un juego de Ritnome hasta ahora — juégalo otra vez para ver la línea.',
     first:'Primero', latest:'Último', best:'Récord', earlier:'antes', runs:'juegos',
     change:function(d){return '<b>'+(d>0?'+':'')+d+' BPM</b> desde el primer juego'}
   }
