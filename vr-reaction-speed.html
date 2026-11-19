@@ -723,14 +723,15 @@ function askBestFree(n){
   var k=String(n||'').trim().toLowerCase(); if(!k||dbAsked[k])return;
   dbAsked[k]=1;
   var school=sessionStorage.getItem('ritnome-school')||'';
-  var url=SB_URL+'/rest/v1/vr_reaction_speed_standings?select=speed&speed=like.free-*&hidden=is.false'+
+  var url=SB_URL+'/rest/v1/vr_reaction_speed_standings?select=speed,admin_id&speed=like.free-*&hidden=is.false&order=admin_id.desc'+
     '&school_name=eq.'+encodeURIComponent(school)+'&player_name=ilike.'+encodeURIComponent(String(n).trim().replace(/[*%,()]/g,''));
   fetch(url,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}})
     .then(function(r){return r.ok?r.json():[]})
     .then(function(rows){
       var top=0;(rows||[]).forEach(function(r){var v=parseInt(String(r.speed).split('-')[1],10);if(v>top)top=v});
       dbBest[k]=top;
-      if(top>savedFreeBPM(n)){try{localStorage.setItem(freeKey(n),String(top))}catch(e){}}
+      var last=(rows&&rows[0])?parseInt(String(rows[0].speed).split('-')[1],10)||0:0;   // the latest run: the current BPM
+      if(last>0&&!(savedFreeBPM(n)>0)){try{localStorage.setItem(freeKey(n),String(last))}catch(e){}}
       if(String($('playerNameInputMain').value).trim().toLowerCase()===k&&$('screen-intro').style.display!=='none')refreshBox(true);
     })
     .catch(function(){});
@@ -966,10 +967,12 @@ function runDrill(){
 function startFreeGame(){
   var secs=Math.max(0.001,(performance.now()-freeStart)/1000);
   freeBPM=Math.max(20,Math.min(200,Math.round(TOTAL_CHECK*60/secs)));
-  // The player's default speed: their first Free Tap unlocks the BPM box,
-  // and a later Free Tap replaces it only when it is higher.
-  var prevBPM=savedFreeBPM(currentPlayerName), newBest=freeBPM>prevBPM;
-  if(newBest){try{localStorage.setItem(freeKey(currentPlayerName),String(freeBPM))}catch(e){}}
+  // The player's speed for the other games is their CURRENT Free Tap BPM (this run).
+  // "New best" still compares with their best: the board's, or this device's.
+  var bk='rv-free-best:'+String(currentPlayerName||'').trim().toLowerCase(), prevBPM=0;
+  try{prevBPM=Math.max(parseInt(localStorage.getItem(bk),10)||0,dbBest[String(currentPlayerName||'').trim().toLowerCase()]||0)}catch(e){}
+  var newBest=freeBPM>prevBPM;
+  try{localStorage.setItem(freeKey(currentPlayerName),String(freeBPM));if(newBest)localStorage.setItem(bk,String(freeBPM))}catch(e){}
   BPM=freeBPM;PACE_MS=Math.round(60000/BPM);
   freeStage='play';TOTAL=TOTAL_FREE;
   idx=0;score=0;totalRT=0;rtCount=0;bestRT=0;hitCount=0;missCount=0;taps=[];   // the speed check's taps are not part of the game
