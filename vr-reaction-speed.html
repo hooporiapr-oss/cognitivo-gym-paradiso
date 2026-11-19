@@ -196,6 +196,7 @@ html.plain #target-inner{background:radial-gradient(circle at 35% 35%,#ff6b7f,#f
 <!-- The player: one name for every game (see jugador.js) -->
 <script>window.JUGADOR={modo:'juego',aqui:true,lista:{url:'https://sdaphocueugzfvjovuxd.supabase.co',key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkYXBob2N1ZXVnemZ2am92dXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2MjQyMDgsImV4cCI6MjA5OTIwMDIwOH0.pDAzf4P6dD9eNEBlnP95SdF5BI-R84-Rdc0vKzYcn7M'},hub:'dynamic-hub.html',escuela:'ritnome-school',categoria:'ritnome-category',tablas:['vr_reactific_standings','vr_reaction_speed_standings','dynamic_memory_quarter_standings']};</script>
 <script src="jugador.js"></script>
+<script src="ritnome.js"></script>
 <script>/* School codes (License Admin → Targets: Plain circles): plain targets, no basketball look */try{if(sessionStorage.getItem('gym-plain')==='1')document.documentElement.classList.add('plain')}catch(e){}</script>
 </head>
 <body>
@@ -929,7 +930,7 @@ if(fsg)fsg.onclick=async function(){try{if(!document.fullscreenElement)await doc
 })();
 
 function msg(t,c){var e=$('msg');e.textContent=t;e.className=c||'watch'}
-function clrT(){timers.forEach(clearTimeout);timers=[];congaStop()}
+function clrT(){timers.forEach(clearTimeout);timers=[];congaStop();if(window.RITNOME)RITNOME.stop()}
 function bpmFromMs(v){return v?Math.round(60000/v):0}
 function ripple(x,y){var r=document.createElement('div');r.className='ripple';r.style.left=x+'px';r.style.top=y+'px';r.style.width='50px';r.style.height='50px';document.body.appendChild(r);setTimeout(function(){r.remove()},520)}
 function flash(){var f=$('flash');f.style.background='rgba(255,30,60,.12)';f.style.opacity='1';setTimeout(function(){f.style.opacity='0'},100)}
@@ -938,6 +939,7 @@ function startDrill(){
   if(phase==='running')return;
   pbLoad();
   initAudio();   // the start tap lets the browser play the beat
+  if(window.RITNOME)RITNOME.warm();   // and gets the congas ready before the 10 taps end
   try{ if(!document.fullscreenElement && document.documentElement.requestFullscreen){ document.documentElement.requestFullscreen().catch(function(){}); } }catch(e){}
   $('screen-intro').style.display='none';
   $('countdown').style.display='flex';
@@ -981,14 +983,19 @@ function startFreeGame(){
   $('conga').hidden=false;$('spCountWrap').hidden=true;$('congaNum').textContent='';
   var dots=$('congaDots').children;for(var d=0;d<dots.length;d++)dots[d].classList.remove('on');
   $('screen-speed').style.display='flex';
-  var beatMs=60000/freeBPM, lead=700, seq=congaSeq(CONGA_BEATS);
-  congaPlay(seq,freeBPM,lead/1000);
-  var drums=$('congaDrums').children;
+  // The Ritnome groove (ritnome.js) plays by itself for the 10 beats at the player's
+  // BPM: two bars, then a roll across the three drums and a final hit on beat 10.
+  // The drums bounce on their own hits; the dots count the beats.
+  var playBPM=Math.max(40,Math.min(200,freeBPM)), beatMs=60000/playBPM, lead=700;
+  var drums=$('congaDrums').children, groove=!!(window.RITNOME&&RITNOME.phrase({bpm:playBPM,beats:CONGA_BEATS,delay:lead/1000,drums:drums}));
+  var seq=groove?null:congaSeq(CONGA_BEATS);
+  if(!groove)congaPlay(seq,playBPM,lead/1000);   // no groove player: the single hits as before
   for(var b=0;b<CONGA_BEATS;b++)(function(b){
     timers.push(setTimeout(function(){
       if(phase!=='running')return;
-      var c=drums[seq[b]];c.classList.remove('hit');void c.offsetWidth;c.classList.add('hit');
       dots[b].classList.add('on');$('congaNum').textContent=(b+1)+' / '+CONGA_BEATS;
+      if(groove)return;
+      var c=drums[seq[b]];c.classList.remove('hit');void c.offsetWidth;c.classList.add('hit');
       timers.push(setTimeout(function(){c.classList.remove('hit')},Math.min(160,beatMs*0.45)));
     },lead+b*beatMs));
   })(b);
