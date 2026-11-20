@@ -101,7 +101,7 @@ svg.chart{width:100%;height:auto;display:block}
 <div id="view" hidden>
   <div class="tabs" id="ages"></div>
   <div class="avgs" id="avgs" hidden></div>
-  <div class="head"><span>Player · A–Z</span><span>Reaction Speed</span><span>Reactific</span><span>Encadena</span><span class="mcol">Swipe It</span><span>Last</span></div>
+  <div class="head"><span>Player · A–Z</span><span>Ritnome BPM</span><span>Reactific</span><span>Encadena</span><span class="mcol">Swipe It</span><span>Last</span></div>
   <div id="list"></div>
   <div class="count" id="count"></div>
 </div>
@@ -259,7 +259,7 @@ function render(){
   $('list').innerHTML=keys.length?keys.map(function(k){var p=players[k];
     return '<button class="row" type="button" data-k="'+esc(k)+'"><span class="nm">'+esc(p.name)+'</span><span class="v">'+cellRS(p)+'</span><span class="v">'+cellBpm(p.rf)+'</span><span class="v">'+cellEnc(p.mr,p.mrE)+'</span><span class="v mcol">'+cellTP(p.sw,p.swP)+'</span><span class="last">'+day(p.last)+'</span></button>';
   }).join(''):'<div class="empty">No players yet'+(currentAge?' in '+esc(currentAge):'')+(school?' at '+esc(school):'')+'.</div>';
-  groupAvg(keys,[{name:'⚡ Reaction Speed',c:'#FFD700',pick:function(p){return p.rs.length?p.rs:p.hb.length?p.hb:p.hbP}},{name:'🔴 Reactific',c:'#00D9A5',pick:function(p){return p.rf}},{name:'⛓️ Encadena',c:'#e879f9',lv:1,pick:function(p){return p.mr}},{name:'⛓️ Encadena · easy',c:'#d8b4fe',lv:1,pick:function(p){return p.mrE}},{name:'👆 Swipe It',c:'#ff4757',pick:function(p){return p.sw.length?p.sw:p.swP}}]);
+  groupAvg(keys,[{name:'⚡ Ritnome BPM',c:'#FFD700',pick:function(p){return p.rs.length?p.rs:p.hb.length?p.hb:p.hbP}},{name:'🔴 Reactific',c:'#00D9A5',pick:function(p){return p.rf}},{name:'⛓️ Encadena',c:'#e879f9',lv:1,pick:function(p){return p.mr}},{name:'⛓️ Encadena · easy',c:'#d8b4fe',lv:1,pick:function(p){return p.mrE}},{name:'👆 Swipe It',c:'#ff4757',pick:function(p){return p.sw.length?p.sw:p.swP}}]);
   $('count').textContent=keys.length?keys.length+' player'+(keys.length>1?'s':'')+' · listed A–Z, not ranked':'';
   $('list').querySelectorAll('.row').forEach(function(b){b.onclick=function(){showPlayer(b.dataset.k)}});
 }
@@ -297,7 +297,7 @@ function showPlayer(k){
   var cats=Object.keys(p.cats).sort(ageSort);
   $('pcat').textContent=(cats.length?cats.join(' · ')+' · ':'')+'last played '+day(p.last);
   $('pbody').innerHTML=
-    block('⚡ Reaction Speed · Free Tap','#00e5ff',p.rs,'BPM','Fastest','No Reaction Speed yet.')+
+    block('⚡ Ritnome BPM · 10-tap test','#00e5ff',p.rs,'BPM','Fastest','No Ritnome BPM yet.')+
     (p.hb.length?block('⚡ Reaction Speed · hold-lift-tap (vreaction.com, tablet)','#5a8fa0',p.hb,'BPM','Fastest',''):'')+
     (p.hbP.length?block('📱 Reaction Speed · hold-lift-tap (phone)','#5a8fa0',p.hbP,'BPM','Fastest',''):'')+
     block('🔴 Reactific · speed','#00D9A5',p.rf,'BPM','Fastest','No Reactific games yet.')+
