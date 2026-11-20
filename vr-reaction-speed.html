@@ -59,7 +59,7 @@ html.plain #target-inner{background:radial-gradient(circle at 35% 35%,#ff6b7f,#f
 .bpm-box span{font-size:1.05rem;font-weight:900;letter-spacing:.08em;color:#fff}
 .bpm-box.locked{opacity:.45;cursor:not-allowed}
 .beat-sw{display:inline-flex;align-items:center;gap:8px;margin:0 auto 12px;padding:8px 16px;border-radius:999px;border:1.5px solid rgba(255,255,255,.25);background:rgba(255,255,255,.05);color:#fff;font-family:inherit;font-size:.8rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
-.nTabs{display:inline-flex;margin:0 auto 12px;border:1.5px solid rgba(255,30,60,.45);border-radius:999px;overflow:hidden}
+.nTabs{display:inline-flex;flex-shrink:0;margin:0 auto 12px;border:1.5px solid rgba(255,30,60,.45);border-radius:999px;overflow:hidden}
 .nTabs button{padding:9px 18px;border:0;background:transparent;color:#ffb3bf;font-weight:900;font-size:.8rem;font-family:inherit;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
 .nTabs button.on{background:#ff1e3c;color:#fff}
 .solo #speedLabel,.solo #speedRow,.solo #beatSw,.solo #nextSpeed,.solo #hitMissToggle,.solo #hitMissDetail{display:none!important}
@@ -160,6 +160,8 @@ html.plain #target-inner{background:radial-gradient(circle at 35% 35%,#ff6b7f,#f
 #countdown{position:fixed;inset:0;z-index:56;display:none;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,#180000 0%,#000 70%)}
 #bigCount{font-size:8rem;font-weight:900;color:#ff1e3c;text-shadow:0 0 60px rgba(255,30,60,.9)}
 @media(max-width:420px){.vrr-logo{font-size:2.1rem}.big-btn{height:60px;font-size:1.1rem}}
+/* phones: the title sits below EXIT and EN / ES instead of under them */
+@media(max-width:600px){#screen-intro{justify-content:flex-start;overflow-y:auto;padding-top:72px}.vrr-logo{font-size:2rem;letter-spacing:.05em}}
 
 /* Standings — in-page board, ported from the working pattern already
    live on Shoot It. Own It. and Make It Count. This game only ever
