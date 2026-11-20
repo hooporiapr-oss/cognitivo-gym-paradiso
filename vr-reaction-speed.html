@@ -62,7 +62,7 @@ html.plain #target-inner{background:radial-gradient(circle at 35% 35%,#ff6b7f,#f
 .nTabs{display:inline-flex;margin:0 auto 12px;border:1.5px solid rgba(255,30,60,.45);border-radius:999px;overflow:hidden}
 .nTabs button{padding:9px 18px;border:0;background:transparent;color:#ffb3bf;font-weight:900;font-size:.8rem;font-family:inherit;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
 .nTabs button.on{background:#ff1e3c;color:#fff}
-.solo #speedLabel,.solo #speedRow,.solo .nTabs,.solo #beatSw,.solo #nextSpeed,.solo #hitMissToggle,.solo #hitMissDetail{display:none!important}
+.solo #speedLabel,.solo #speedRow,.solo #beatSw,.solo #nextSpeed,.solo #hitMissToggle,.solo #hitMissDetail{display:none!important}
 .beat-sw.on{border-color:#ffd35a;color:#ffd35a;background:rgba(255,211,90,.1)}
 .sw-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
 .sw-row .beat-sw{margin:0 0 12px}
@@ -376,6 +376,10 @@ var TOTAL_BEAT=50, TOTAL_CHECK=10, TOTAL_FREE=25;
 // The game after the speed check: 10 or 25 targets, picked with the tabs on the
 // start screen and remembered on this device (25 until picked).
 try{if(localStorage.getItem('rv-free-n')==='10')TOTAL_FREE=10}catch(e){}
+// Ritnome BPM (the tap test on its own): the same tabs pick a 10- or 25-tap test,
+// remembered on this device (10 until picked).
+var SOLO=document.documentElement.classList.contains('solo');
+try{if(SOLO&&localStorage.getItem('rv-check-n')==='25')TOTAL_CHECK=25}catch(e){}
 var TOTAL=TOTAL_BEAT;
 var freeStage='', freeStart=0, freeBPM=0;
 function setSpeed(v){
@@ -865,11 +869,11 @@ var TX={
     change:function(d){return '<b>'+(d>0?'+':'')+d+' BPM</b> desde el primer juego'}
   }
 };
-function tx(k){var v=(TX[introLang]||TX.en)[k];return typeof v==='string'?v.replace(/\b25\b/g,TOTAL_FREE):v}   // the texts follow the 10 / 25 pick
-function showN(){$('n10').classList.toggle('on',TOTAL_FREE===10);$('n25').classList.toggle('on',TOTAL_FREE===25);
+function tx(k){var v=(TX[introLang]||TX.en)[k];if(typeof v!=='string')return v;return SOLO?v.replace(/\b10\b/g,TOTAL_CHECK):v.replace(/\b25\b/g,TOTAL_FREE)}   // the texts follow the 10 / 25 pick   // the texts follow the 10 / 25 pick
+function showN(){var N=SOLO?TOTAL_CHECK:TOTAL_FREE;$('n10').classList.toggle('on',N===10);$('n25').classList.toggle('on',N===25);
   $('n10').textContent='10 '+tx('nWord');$('n25').textContent='25 '+tx('nWord');
   $('freeSub').textContent=tx('freeSub');$('spGo').textContent=tx('spGo');if(SPEED==='free')$('ruleT').innerHTML=tx('ruleFree')}
-function setN(n){TOTAL_FREE=n;try{localStorage.setItem('rv-free-n',String(n))}catch(e){}showN()}
+function setN(n){if(SOLO){TOTAL_CHECK=n;if(SPEED==='free')TOTAL=n}else TOTAL_FREE=n;try{localStorage.setItem(SOLO?'rv-check-n':'rv-free-n',String(n))}catch(e){}showN()}
 // After a game: the next speed to try. 88% or more of the targets hit
 // → 10 BPM faster; under 60% → 10 slower; in between → stay. The player
 // decides — the button just starts the next game at that speed.
@@ -992,7 +996,7 @@ function startFreeGame(){
     pbShow(freeBPM,function(r){var m=/^free-(\d+)$/.exec(r.speed||'');return m?+m[1]:null},'BPM');
     recordScoreToStandings(currentPlayerName,TOTAL_CHECK,Math.round(secs*1000/TOTAL_CHECK),TOTAL_CHECK,0);
     $('endNum').textContent=freeBPM+' BPM';
-    $('endLabel').textContent=tx('soloLab')+' · '+tx('taps')(secs.toFixed(1))+(newBest?(prevBPM?' · '+tx('newBest')(prevBPM):''):' · '+tx('yourBest')(prevBPM));
+    $('endLabel').textContent=tx('soloLab')+' · '+tx('taps')(secs.toFixed(1)).replace(/^10\b/,TOTAL_CHECK)+(newBest?(prevBPM?' · '+tx('newBest')(prevBPM):''):' · '+tx('yourBest')(prevBPM));
     $('screen-end').style.display='flex';
     return;
   }
