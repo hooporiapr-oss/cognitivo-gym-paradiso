@@ -59,6 +59,9 @@ html.plain #target-inner{background:radial-gradient(circle at 35% 35%,#ff6b7f,#f
 .bpm-box span{font-size:1.05rem;font-weight:900;letter-spacing:.08em;color:#fff}
 .bpm-box.locked{opacity:.45;cursor:not-allowed}
 .beat-sw{display:inline-flex;align-items:center;gap:8px;margin:0 auto 12px;padding:8px 16px;border-radius:999px;border:1.5px solid rgba(255,255,255,.25);background:rgba(255,255,255,.05);color:#fff;font-family:inherit;font-size:.8rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+.nTabs{display:inline-flex;margin:0 auto 12px;border:1.5px solid rgba(255,30,60,.45);border-radius:999px;overflow:hidden}
+.nTabs button{padding:9px 18px;border:0;background:transparent;color:#ffb3bf;font-weight:900;font-size:.8rem;font-family:inherit;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+.nTabs button.on{background:#ff1e3c;color:#fff}
 .beat-sw.on{border-color:#ffd35a;color:#ffd35a;background:rgba(255,211,90,.1)}
 .sw-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
 .sw-row .beat-sw{margin:0 0 12px}
@@ -236,6 +239,7 @@ html.plain #target-inner{background:radial-gradient(circle at 35% 35%,#ff6b7f,#f
     <button class="speed-btn free active" data-speed="free" type="button"><span id="freeName">🪘 Ritnome BPM</span><small id="freeSub">10-tap speed check · then 25 targets at your BPM</small></button>
     <label class="bpm-box locked" id="bpmBox"><button type="button" class="bpm-step" id="bpmDown" disabled aria-label="Slower">−</button><input id="bpmInput" type="number" inputmode="numeric" min="10" max="300" step="1" value="" placeholder="—" disabled aria-label="Speed in BPM"><button type="button" class="bpm-step" id="bpmUp" disabled aria-label="Faster">+</button><span>BPM</span><small id="bpmNote">play Ritnome first to unlock</small></label>
   </div>
+  <div class="nTabs" role="tablist"><button type="button" role="tab" id="n10">10 targets</button><button type="button" role="tab" id="n25">25 targets</button></div>
   <div class="sw-row">
     <button type="button" class="beat-sw on" id="beatSw" aria-pressed="true">🔊 <span id="beatTxt">Beat: on</span></button>
     <button type="button" class="beat-sw" id="sizeSw" aria-pressed="false">🎯 <span id="sizeTxt">Targets: normal</span></button>
@@ -369,6 +373,9 @@ var SPEED=100;
 var BPM=100;
 var PACE_MS=Math.round(60000/BPM); // one full beat between one tap resolving and the next target appearing
 var TOTAL_BEAT=50, TOTAL_CHECK=10, TOTAL_FREE=25;
+// The game after the speed check: 10 or 25 targets, picked with the tabs on the
+// start screen and remembered on this device (25 until picked).
+try{if(localStorage.getItem('rv-free-n')==='10')TOTAL_FREE=10}catch(e){}
 var TOTAL=TOTAL_BEAT;
 var freeStage='', freeStart=0, freeBPM=0;
 function setSpeed(v){
@@ -814,7 +821,7 @@ var INTRO_I18N={
 // the language chosen on the start screen (EN / ES).
 var TX={
   en:{
-    speed:'Speed', freeName:'🪘 Ritnome BPM', freeSub:'10-tap speed check · then 25 targets at your BPM',
+    nWord:'targets', speed:'Speed', freeName:'🪘 Ritnome BPM', freeSub:'10-tap speed check · then 25 targets at your BPM',
     ruleBeat:'<b>50 targets at your BPM.</b> A cell lights up — tap it before the next beat or it counts as a miss (−100). Every hit is +100, and every reaction is shown as its own beats-per-minute.',
     ruleFree:'<b>Ritnome.</b> First a <b>speed check</b>: 10 targets with no beat — each waits for you, tap it and the next one appears. That measures <b>your BPM</b>. Then the game opens at your speed for <b>25 targets</b>.',
     locked:'play Ritnome first to unlock', open:'your Ritnome speed · − / + or type to change',
@@ -836,7 +843,7 @@ var TX={
     change:function(d){return '<b>'+(d>0?'+':'')+d+' BPM</b> since the first run'}
   },
   es:{
-    speed:'Velocidad', freeName:'🪘 Ritnome BPM', freeSub:'prueba de velocidad de 10 toques · luego 25 objetivos a tu BPM',
+    nWord:'objetivos', speed:'Velocidad', freeName:'🪘 Ritnome BPM', freeSub:'prueba de velocidad de 10 toques · luego 25 objetivos a tu BPM',
     ruleBeat:'<b>50 objetivos a tu BPM.</b> Se ilumina una celda — tócala antes del próximo pulso o cuenta como fallo (−100). Cada acierto vale +100, y cada reacción se muestra como sus propios pulsos por minuto.',
     ruleFree:'<b>Ritnome.</b> Primero una <b>prueba de velocidad</b>: 10 objetivos sin pulso — cada uno te espera, tócalo y aparece el próximo. Eso mide <b>tu BPM</b>. Luego el juego empieza a tu velocidad con <b>25 objetivos</b>.',
     locked:'juega Ritnome primero para desbloquear', open:'tu velocidad de Ritnome · − / + o escribe para cambiar',
@@ -858,7 +865,11 @@ var TX={
     change:function(d){return '<b>'+(d>0?'+':'')+d+' BPM</b> desde el primer juego'}
   }
 };
-function tx(k){return (TX[introLang]||TX.en)[k]}
+function tx(k){var v=(TX[introLang]||TX.en)[k];return typeof v==='string'?v.replace(/\b25\b/g,TOTAL_FREE):v}   // the texts follow the 10 / 25 pick
+function showN(){$('n10').classList.toggle('on',TOTAL_FREE===10);$('n25').classList.toggle('on',TOTAL_FREE===25);
+  $('n10').textContent='10 '+tx('nWord');$('n25').textContent='25 '+tx('nWord');
+  $('freeSub').textContent=tx('freeSub');$('spGo').textContent=tx('spGo');if(SPEED==='free')$('ruleT').innerHTML=tx('ruleFree')}
+function setN(n){TOTAL_FREE=n;try{localStorage.setItem('rv-free-n',String(n))}catch(e){}showN()}
 // After a game: the next speed to try. 88% or more of the targets hit
 // → 10 BPM faster; under 60% → 10 slower; in between → stay. The player
 // decides — the button just starts the next game at that speed.
@@ -881,6 +892,7 @@ function applySpeedWords(){
   $('speedLabel').textContent=tx('speed');$('freeName').textContent=tx('freeName');$('freeSub').textContent=tx('freeSub');
   $('spTop').textContent=tx('spTop');$('spGo').textContent=tx('spGo');
   $('ruleT').innerHTML=SPEED==='free'?tx('ruleFree'):tx('ruleBeat');
+  if(typeof showN==='function'&&$('n10'))showN();
   $('bpmNote').textContent=$('bpmInput').disabled?tx('locked'):tx('open');
   showBeatSw();showSizeSw();
   $('progBtn').textContent=$('endProgBtn').textContent=tx('progBtn');
@@ -962,7 +974,7 @@ function runDrill(){
   timers.push(setTimeout(function(){msg('','go');nextTarget()},900));
 }
 // Free Tap: the 10-tap speed check is done — the game opens at the
-// measured BPM for 25 targets, scored from zero.
+// measured BPM for 10 or 25 targets (the tabs), scored from zero.
 // After the 10 taps: a scoreboard with the player's BPM, then a 5-4-3-2-1
 // countdown on it, then the 25 targets at that speed.
 function startFreeGame(){
@@ -1150,6 +1162,7 @@ function showBeatSw(){
   var b=$('beatSw');b.classList.toggle('on',beatOn);b.setAttribute('aria-pressed',beatOn?'true':'false');
   $('beatTxt').textContent=tx(beatOn?'beatOn':'beatOff');
 }
+$('n10').addEventListener('click',function(){setN(10)});$('n25').addEventListener('click',function(){setN(25)});showN();
 $('beatSw').addEventListener('click',function(){beatOn=!beatOn;try{localStorage.setItem('rv-beat',beatOn?'on':'off')}catch(e){}showBeatSw()});
 showBeatSw();   // the beat switch as this device left it
 
