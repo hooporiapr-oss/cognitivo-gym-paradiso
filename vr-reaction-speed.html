@@ -1255,9 +1255,11 @@ function swSave(name,sc,bpm,hits,misses,avg){
     school_name:sessionStorage.getItem('ritnome-school')||null,category:sessionStorage.getItem('ritnome-category')||null,bpm:bpm||null,hits:hits,misses:misses,avg_ms:avg||null,level:sc};
   function post(r){return fetch(SB_URL+'/rest/v1/vr_mobile_standings',{method:'POST',headers:{'Content-Type':'application/json',Prefer:'return=minimal','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify(r)})}
   swSaveFailed=false;
+  // a refused save shows the board's own reason under the warning
   swSaving=post(row).then(function(res){if(res.ok)return res;delete row.category;return post(row)})
-    .then(function(res){if(!res||!res.ok)throw 0})
-    .catch(function(){swSaveFailed=true;var el=$('pbMsg');el.innerHTML+='<div style="font-size:.8rem;color:#ff8a8a;margin-top:6px">'+tx('swNotSaved')+'</div>';el.hidden=false});
+    .then(function(res){if(!res||!res.ok)return (res?res.text():Promise.resolve('')).then(function(t){var m='';try{var j=JSON.parse(t);m=j.message||j.details||''}catch(e){m=t||''}throw {why:(res?res.status+' ':'')+m}})})
+    .catch(function(err){swSaveFailed=true;var el=$('pbMsg');
+      el.innerHTML+='<div style="font-size:.8rem;color:#ff8a8a;margin-top:6px">'+tx('swNotSaved')+'</div>'+(err&&err.why?'<div style="font-size:.68rem;color:#c8ccd4;margin-top:2px">'+escH(String(err.why).slice(0,160))+'</div>':'');el.hidden=false});
 }
 function swPbShow(now){   // BPM, like the tap test
   var el=$('pbMsg');el.hidden=true;if(!swPast||!(now>0))return;
