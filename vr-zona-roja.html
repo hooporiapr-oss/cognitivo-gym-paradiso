@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>Zona Roja | Cognitivo Gym</title>
+<title>Zona Roja | Reaction Velocity</title>
 <!-- ZONA ROJA — Zona with Reactific's rule: tap only the red. Encadena's five spots
      in the 2-1-2 zone; on every beat, at the player's Ritnome BPM, one spot lights up:
      red, or another color (blue, green, orange, yellow, purple — it keeps changing).
@@ -120,10 +120,10 @@ html,body{height:100%;background:#000;color:#fff;font-family:Arial,sans-serif;ov
 <body>
 
 <div class="rx-intro rx-zr" id="intro">
-  <a class="intro-back" href="dynamic-hub.html">← Exit</a>
+  <a class="intro-back" href="mobile-hub.html">← Exit</a>
   <div class="box-lang-toggle"><button type="button" class="box-lang-btn lg" data-l="es">ES</button><button type="button" class="box-lang-btn lg" data-l="en">EN</button></div>
   <div class="vrr-logo">ZONA <span>ROJA</span></div>
-  <div class="vrr-sub" id="who">Cognitivo Gym</div>
+  <div class="vrr-sub" id="who"></div>
   <div class="tempo-hint" id="hint"></div>
   <div class="nTabs" role="tablist"><button type="button" role="tab" id="n10">10</button><button type="button" role="tab" id="n25">25</button></div>
   <div class="speed-label" data-t="speedLbl">Speed</div>
@@ -134,7 +134,7 @@ html,body{height:100%;background:#000;color:#fff;font-family:Arial,sans-serif;ov
   <input type="text" id="playerNameInputMain" class="name-input" maxlength="20" placeholder="Your name" autocomplete="off" style="max-width:320px;margin:8px auto">
   <button class="big-btn" id="startBtn" type="button" data-t="start">▶ Start</button>
   <div class="game-switcher">
-    <a class="switcher-btn game-active" href="vr-reaction-speed.html">Ritnome<br>BPM</a>
+    <a class="switcher-btn game-active" href="vr-reaction-speed.html">Reaction<br>Speed</a>
     <a class="switcher-btn game-active" href="vr-reactific.html">Reactific</a>
     <a class="switcher-btn game-active" href="vr-swipe-it.html">Swipe<br>It</a>
     <a class="switcher-btn game-active" href="vr-encadena.html">Enca<br>dena</a>
@@ -162,7 +162,7 @@ html,body{height:100%;background:#000;color:#fff;font-family:Arial,sans-serif;ov
   <div class="btns">
     <button class="go" id="againBtn" type="button" data-t="again">Play again</button>
     <button class="btn2" id="nextPlayerBtn" type="button" data-t="nextp">Next Player</button>
-    <a class="btn2" href="dynamic-hub.html">← THE HUB</a>
+    <a class="btn2" href="mobile-hub.html">← THE HUB</a>
   </div>
 </div>
 
@@ -185,6 +185,11 @@ var TX={
       againLine:'Play again to start your progress line.',wrong:'wrong spot',late:'late',notRed:'not red'}
 };
 var LANG='es'; try{if(localStorage.getItem('rs-lang')==='en')LANG='en'}catch(e){}
+// vreaction.com: the speed comes from Reaction Speed; Cognitivo Gym calls it Ritnome BPM
+if(MOVIL.mode!=='gym'){['es','en'].forEach(function(l){Object.keys(TX[l]).forEach(function(k){
+  var w=function(x){return String(x).replace(/tu BPM Ritnome/g,'tu BPM de Reaction Speed').replace(/your Ritnome BPM/g,'your Reaction Speed BPM').replace(/Ritnome BPM/g,'Reaction Speed')};
+  var v=TX[l][k]; TX[l][k]=typeof v==='function'?(function(f){return function(){return w(f.apply(null,arguments))}})(v):w(v);
+})})}
 function T(k){var v=(TX[LANG]&&TX[LANG][k]);return v!=null?v:(TX.en[k]!=null?TX.en[k]:k)}
 // 10 or 25 targets: the tabs (remembered on this device; 10 until picked)
 var N=10; try{if(localStorage.getItem('rv-zona-roja-n')==='25')N=25}catch(e){}
