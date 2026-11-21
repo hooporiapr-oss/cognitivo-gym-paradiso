@@ -882,7 +882,7 @@ var TX={
     swFirst:'⭐ FIRST MARK SET', swFirstSub:'the one to beat next time', swPb:'⭐ NEW PERSONAL BEST!', swWas:'your best was', swBest:'Your best',
     progSubSw:'Swipe test speed, run by run', outOf:function(n){return 'out of '+n},
     progNoneSw:'No swipe tests yet — play the swipe test to start the line.',
-    progOneSw:'One swipe test so far — play it again to see the line.',
+    progOneSw:'One swipe test so far — play it again to see the line.', progErr:'Could not load the runs — check the connection and try again.', swNotSaved:'⚠️ This run was not saved — check the connection.',
     changeSw:function(d){return '<b>'+(d>0?'+':'')+d+' BPM</b> since the first run'}
   },
   es:{
@@ -913,7 +913,7 @@ var TX={
     swFirst:'⭐ PRIMERA MARCA', swFirstSub:'la que hay que superar la próxima vez', swPb:'⭐ ¡NUEVO RÉCORD PERSONAL!', swWas:'tu mejor era', swBest:'Tu mejor',
     progSubSw:'Velocidad de la prueba de deslizar, juego por juego', outOf:function(n){return 'de '+n},
     progNoneSw:'Todavía no hay pruebas de deslizar — juégala para empezar la línea.',
-    progOneSw:'Una prueba de deslizar hasta ahora — juégala otra vez para ver la línea.',
+    progOneSw:'Una prueba de deslizar hasta ahora — juégala otra vez para ver la línea.', progErr:'No se pudieron cargar los juegos — revisa la conexión y trata otra vez.', swNotSaved:'⚠️ Este juego no se guardó — revisa la conexión.',
     changeSw:function(d){return '<b>'+(d>0?'+':'')+d+' BPM</b> desde el primer juego'}
   }
 };
@@ -1022,7 +1022,7 @@ function flash(){var f=$('flash');f.style.background='rgba(255,30,60,.12)';f.sty
 function startDrill(){
   if(phase==='running')return;
   pbLoad();
-  if(KIND==='swipe')swLoadPast(currentPlayerName);
+  if(KIND==='swipe'){swSaving=null;swLoadPast(currentPlayerName)}
   initAudio();   // the start tap lets the browser play the beat
   if(window.RITNOME)RITNOME.warm();   // and gets the congas ready before the 10 taps end
   try{ if(!document.fullscreenElement && document.documentElement.requestFullscreen){ document.documentElement.requestFullscreen().catch(function(){}); } }catch(e){}
@@ -1236,23 +1236,28 @@ function swResult(ok,ms,why){
 }
 function swBestTxt(){var b=0;(swPast||[]).forEach(function(r){var v=parseInt(r.bpm,10)||0;if(v>b)b=v});return b>0?String(b):'–'}
 function swGame(){return 'swipe-test-'+TOTAL_CHECK}
-// this player's own past swipe tests at this length (personal best + My Progress)
+// this player's own past swipe tests, 10 and 25 together — one BPM line, like the
+// tap test (personal best + My Progress). swReadErr: the board could not be read.
+var swReadErr=false, swSaving=null, swSaveFailed=false;
 function swLoadPast(name){
-  swPast=null;var n=String(name||'').trim();if(!n)return Promise.resolve([]);
-  var url=SB_URL+'/rest/v1/vr_mobile_standings?select=level,bpm,logged_at&hidden=is.false&game_key=eq.'+swGame()+
+  swPast=null;swReadErr=false;var n=String(name||'').trim();if(!n)return Promise.resolve([]);
+  var url=SB_URL+'/rest/v1/vr_mobile_standings?select=level,bpm,logged_at&hidden=is.false&game_key=like.swipe-test-*'+
     '&school_name=eq.'+encodeURIComponent(sessionStorage.getItem('ritnome-school')||'')+'&player_name=ilike.'+encodeURIComponent(n.replace(/[*%,()]/g,''))+'&order=admin_id.asc';
   return fetch(url,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}})
-    .then(function(r){return r.ok?r.json():null})
+    .then(function(r){if(!r.ok)swReadErr=true;return r.ok?r.json():null})
     .then(function(x){swPast=Array.isArray(x)?x:null;
       if(phase==='running'&&freeStage==='swipe')$('hBest').textContent=swBestTxt();
       return swPast||[]})
-    .catch(function(){return []});
+    .catch(function(){swReadErr=true;return []});
 }
 function swSave(name,sc,bpm,hits,misses,avg){
   var row={game_key:swGame(),device:(Math.min(innerWidth,innerHeight)<=600?'phone':'tablet'),player_name:String(name).trim().slice(0,20),
     school_name:sessionStorage.getItem('ritnome-school')||null,category:sessionStorage.getItem('ritnome-category')||null,bpm:bpm||null,hits:hits,misses:misses,avg_ms:avg||null,level:sc};
   function post(r){return fetch(SB_URL+'/rest/v1/vr_mobile_standings',{method:'POST',headers:{'Content-Type':'application/json',Prefer:'return=minimal','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify(r)})}
-  post(row).then(function(res){if(!res.ok){delete row.category;return post(row)}}).catch(function(){});
+  swSaveFailed=false;
+  swSaving=post(row).then(function(res){if(res.ok)return res;delete row.category;return post(row)})
+    .then(function(res){if(!res||!res.ok)throw 0})
+    .catch(function(){swSaveFailed=true;var el=$('pbMsg');el.innerHTML+='<div style="font-size:.8rem;color:#ff8a8a;margin-top:6px">'+tx('swNotSaved')+'</div>';el.hidden=false});
 }
 function swPbShow(now){   // BPM, like the tap test
   var el=$('pbMsg');el.hidden=true;if(!swPast||!(now>0))return;
@@ -1386,8 +1391,10 @@ function openProgress(from){
   if(!n){$('progBody').innerHTML='<div class="box-empty">'+tx('progNoName')+'</div>';return}
   $('progBody').innerHTML='<div class="box-empty">'+tx('loading')+'</div>';
   if(KIND==='swipe'){   // the swipe test: score out of 10 or 25, run by run
-    $('progSub').textContent=tx('progSubSw')+' · '+TOTAL_CHECK+' '+tx('nWordSw')+(n?' · '+n:'');
-    swLoadPast(n).then(function(rows){drawProgress(rows||[],true)});
+    $('progSub').textContent=tx('progSubSw')+(n?' · '+n:'');
+    (swSaving||Promise.resolve()).catch(function(){}).then(function(){return swLoadPast(n)}).then(function(rows){
+      if(swReadErr&&!(rows&&rows.length)){$('progBody').innerHTML='<div class="box-empty">'+tx('progErr')+'</div>';return}
+      drawProgress(rows||[],true)});
     return;
   }
   var school=sessionStorage.getItem('ritnome-school')||'';
