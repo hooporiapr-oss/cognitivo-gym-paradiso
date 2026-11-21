@@ -402,9 +402,10 @@ var TOTAL=TOTAL_BEAT;
 var freeStage='', freeStart=0, freeBPM=0;
 // THE TEST: the tap test (Ritnome BPM) or the swipe test — picked with the tabs
 // at the top of the start screen, remembered on this device (tap until picked).
-// The swipe test plays the same way (10 or 25, each target waits for you, the
-// whole run gives a BPM) but every target is a Swipe It arrow, scored: the
-// right way +1, anything else a miss. It never changes the player's Ritnome
+// The swipe test plays the same way (10 or 25, each target waits for you) and
+// scores the same way — a BPM — but every target is a Swipe It arrow: only the
+// right swipes count toward the BPM (right swipes × 60 ÷ seconds for the run),
+// so a miss costs speed. It never changes the player's Ritnome
 // BPM — that stays the tap test's. Saves to vr_mobile_standings, game_key
 // 'swipe-test-10' or 'swipe-test-25' (the two lengths never mix).
 var KIND='tap';
@@ -875,14 +876,14 @@ var TX={
     first:'First', latest:'Latest', best:'Best', earlier:'earlier', runs:'runs',
     change:function(d){return '<b>'+(d>0?'+':'')+d+' BPM</b> since the first run'},
     kTap:'👆 Tap test', kSwipe:'↗️ Swipe test', subTap:'Cognitivo Gym · Tap Test', subSw:'Cognitivo Gym · Swipe Test', nWordSw:'swipes',
-    ruleSw:'<b>Swipe test.</b> 10 arrows, one at a time — each waits for you. Swipe it the way it points and the next one appears. Every right swipe scores <b>+1</b>; your 10 swipes also give <b>your BPM</b>.',
-    checkSw:'SWIPE TEST · 10 SWIPES', swLab:'Swipe test', swTime:function(s){return '10 swipes in '+s+'s'},
+    ruleSw:'<b>Swipe test.</b> 10 arrows, one at a time — each waits for you. Swipe it the way it points and the next one appears. Only the right swipes count — they measure <b>your BPM</b>.',
+    checkSw:'SWIPE TEST · 10 SWIPES', swLab:'Swipe test', swTime:function(s){return '10 swipes in '+s+'s'}, rightW:'right',
     why_off:'Off the arrow', why_way:'Wrong way', why_early:'Too early', why_tap:'Swipe, don’t tap',
     swFirst:'⭐ FIRST MARK SET', swFirstSub:'the one to beat next time', swPb:'⭐ NEW PERSONAL BEST!', swWas:'your best was', swBest:'Your best',
-    progSubSw:'Swipe test, run by run', outOf:function(n){return 'out of '+n},
+    progSubSw:'Swipe test speed, run by run', outOf:function(n){return 'out of '+n},
     progNoneSw:'No swipe tests yet — play the swipe test to start the line.',
     progOneSw:'One swipe test so far — play it again to see the line.',
-    changeSw:function(d){return '<b>'+(d>0?'+':'')+d+'</b> since the first run'}
+    changeSw:function(d){return '<b>'+(d>0?'+':'')+d+' BPM</b> since the first run'}
   },
   es:{
     nWord:'objetivos', speed:'Velocidad', freeName:'🪘 Ritnome BPM', freeSub:'prueba de 10 toques · tu BPM',
@@ -906,14 +907,14 @@ var TX={
     first:'Primero', latest:'Último', best:'Récord', earlier:'antes', runs:'juegos',
     change:function(d){return '<b>'+(d>0?'+':'')+d+' BPM</b> desde el primer juego'},
     kTap:'👆 Prueba de toques', kSwipe:'↗️ Prueba de deslizar', subTap:'Cognitivo Gym · Prueba de Toques', subSw:'Cognitivo Gym · Prueba de Deslizar', nWordSw:'flechas',
-    ruleSw:'<b>Prueba de deslizar.</b> 10 flechas, una a la vez — cada una te espera. Deslízala hacia donde apunta y aparece la próxima. Cada deslizamiento correcto vale <b>+1</b>; tus 10 deslizamientos también dan <b>tu BPM</b>.',
-    checkSw:'PRUEBA DE DESLIZAR · 10 FLECHAS', swLab:'Prueba de deslizar', swTime:function(s){return '10 flechas en '+s+'s'},
+    ruleSw:'<b>Prueba de deslizar.</b> 10 flechas, una a la vez — cada una te espera. Deslízala hacia donde apunta y aparece la próxima. Solo cuentan los deslizamientos correctos — miden <b>tu BPM</b>.',
+    checkSw:'PRUEBA DE DESLIZAR · 10 FLECHAS', swLab:'Prueba de deslizar', swTime:function(s){return '10 flechas en '+s+'s'}, rightW:'correctas',
     why_off:'Fuera de la flecha', why_way:'Dirección equivocada', why_early:'Muy temprano', why_tap:'Desliza, no toques',
     swFirst:'⭐ PRIMERA MARCA', swFirstSub:'la que hay que superar la próxima vez', swPb:'⭐ ¡NUEVO RÉCORD PERSONAL!', swWas:'tu mejor era', swBest:'Tu mejor',
-    progSubSw:'Prueba de deslizar, juego por juego', outOf:function(n){return 'de '+n},
+    progSubSw:'Velocidad de la prueba de deslizar, juego por juego', outOf:function(n){return 'de '+n},
     progNoneSw:'Todavía no hay pruebas de deslizar — juégala para empezar la línea.',
     progOneSw:'Una prueba de deslizar hasta ahora — juégala otra vez para ver la línea.',
-    changeSw:function(d){return '<b>'+(d>0?'+':'')+d+'</b> desde el primer juego'}
+    changeSw:function(d){return '<b>'+(d>0?'+':'')+d+' BPM</b> desde el primer juego'}
   }
 };
 function tx(k){var v=(TX[introLang]||TX.en)[k];if(typeof v!=='string')return v;return SOLO?v.replace(/\b10\b/g,TOTAL_CHECK):v.replace(/\b25\b/g,TOTAL_FREE)}   // the texts follow the 10 / 25 pick   // the texts follow the 10 / 25 pick
@@ -1233,7 +1234,7 @@ function swResult(ok,ms,why){
   if(idx>=TOTAL){timers.push(setTimeout(endSwipe,300));return}
   nextTarget();
 }
-function swBestTxt(){var b=-1;(swPast||[]).forEach(function(r){var v=parseInt(r.level,10);if(v>b)b=v});return b>=0?String(b):'–'}
+function swBestTxt(){var b=0;(swPast||[]).forEach(function(r){var v=parseInt(r.bpm,10)||0;if(v>b)b=v});return b>0?String(b):'–'}
 function swGame(){return 'swipe-test-'+TOTAL_CHECK}
 // this player's own past swipe tests at this length (personal best + My Progress)
 function swLoadPast(name){
@@ -1253,14 +1254,14 @@ function swSave(name,sc,bpm,hits,misses,avg){
   function post(r){return fetch(SB_URL+'/rest/v1/vr_mobile_standings',{method:'POST',headers:{'Content-Type':'application/json',Prefer:'return=minimal','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify(r)})}
   post(row).then(function(res){if(!res.ok){delete row.category;return post(row)}}).catch(function(){});
 }
-function swPbShow(now,N){
-  var el=$('pbMsg');el.hidden=true;if(!swPast)return;
-  var prev=-1;swPast.forEach(function(r){var v=parseInt(r.level,10);if(v>prev)prev=v});
+function swPbShow(now){   // BPM, like the tap test
+  var el=$('pbMsg');el.hidden=true;if(!swPast||!(now>0))return;
+  var prev=-1;swPast.forEach(function(r){var v=parseInt(r.bpm,10)||0;if(v>0&&v>prev)prev=v});
   var big='font-size:1.15rem;font-weight:900;letter-spacing:.06em;color:#ffd35a;text-shadow:0 0 18px rgba(255,211,90,.6)';
   var small='font-size:.8rem;color:#c8ccd4;margin-top:3px';
-  if(prev<0)el.innerHTML='<div style="'+big+'">'+tx('swFirst')+'</div><div style="'+small+'">'+now+'/'+N+' — '+tx('swFirstSub')+'</div>';
-  else if(now>prev)el.innerHTML='<div style="'+big+'">'+tx('swPb')+'</div><div style="'+small+'">'+now+'/'+N+' · '+tx('swWas')+' '+prev+'/'+N+'</div>';
-  else el.innerHTML='<div style="'+small+'">'+tx('swBest')+': '+prev+'/'+N+'</div>';
+  if(prev<0)el.innerHTML='<div style="'+big+'">'+tx('swFirst')+'</div><div style="'+small+'">'+now+' BPM — '+tx('swFirstSub')+'</div>';
+  else if(now>prev)el.innerHTML='<div style="'+big+'">'+tx('swPb')+'</div><div style="'+small+'">'+now+' BPM · '+tx('swWas')+' '+prev+'</div>';
+  else el.innerHTML='<div style="'+small+'">'+tx('swBest')+': '+prev+' BPM</div>';
   el.hidden=false;
 }
 function endSwipe(){
@@ -1268,11 +1269,11 @@ function endSwipe(){
   var secs=Math.max(0.001,(performance.now()-freeStart)/1000), N=TOTAL_CHECK;
   phase='done';clrT();targetEl.classList.remove('visible');targetEl.classList.remove('sw');
   document.documentElement.classList.remove('swiping');msg('','go');
-  var bpm=Math.max(10,Math.min(300,Math.round(N*60/secs))), avg=rtCount?Math.round(totalRT/rtCount):0;
-  swPbShow(hitCount,N);
+  var bpm=Math.min(300,Math.round(hitCount*60/secs)), avg=rtCount?Math.round(totalRT/rtCount):0;   // only the right swipes count
+  swPbShow(bpm);
   swSave(currentPlayerName,hitCount,bpm,hitCount,missCount,avg);
-  $('endNum').textContent=hitCount+'/'+N;
-  $('endLabel').textContent=tx('swLab')+' · '+bpm+' BPM · '+tx('swTime')(secs.toFixed(1)).replace(/^10\b/,N);
+  $('endNum').textContent=bpm+' BPM';
+  $('endLabel').textContent=tx('swLab')+' · '+tx('swTime')(secs.toFixed(1)).replace(/^10\b/,N)+' · '+hitCount+'/'+N+' '+tx('rightW');
   $('endHits').textContent=hitCount;$('endMisses').textContent=missCount;renderTapLog();
   $('screen-end').style.display='flex';
 }
@@ -1401,13 +1402,13 @@ function openProgress(from){
 }
 function drawProgress(rows,sw){
   var pts=[], N=TOTAL_CHECK;
-  if(sw)rows.forEach(function(r){var v=parseInt(r.level,10);if(r.level!=null&&v>=0)pts.push({b:v,at:r.logged_at||''})});
+  if(sw)rows.forEach(function(r){var v=parseInt(r.bpm,10);if(v>0)pts.push({b:v,at:r.logged_at||''})});
   else rows.forEach(function(r){var v=parseInt(String(r.speed).split('-')[1],10);if(v>0)pts.push({b:v,at:r.logged_at||''})});
   if(pts.length>40)pts=pts.slice(-40);   // the latest 40 runs
   if(!pts.length){$('progBody').innerHTML='<div class="box-empty">'+tx(sw?'progNoneSw':'progNone')+'</div>';return}
-  var first=pts[0].b, last=pts[pts.length-1].b, top=-1, topI=0;
+  var first=pts[0].b, last=pts[pts.length-1].b, top=0, topI=0;
   pts.forEach(function(p,i){if(p.b>top){top=p.b;topI=i}});
-  var unit=sw?tx('outOf')(N):'BPM';
+  var unit='BPM';
   var cell=function(v,l){return '<div class="hitmiss-cell hits"><div class="hitmiss-val">'+v+'</div><div class="hitmiss-lbl">'+l+' · '+unit+'</div></div>'};
   var html='<div class="prog-stats">'+cell(first,tx('first'))+cell(last,tx('latest'))+cell(top,tx('best'))+'</div>';
   if(pts.length<2){$('progBody').innerHTML=html+'<div class="box-empty">'+tx(sw?'progOneSw':'progOne')+'</div>';return}
@@ -1416,15 +1417,14 @@ function drawProgress(rows,sw){
   var W=560,H=240,L=44,R=16,T=16,B=34;
   var lo=Math.floor((Math.min.apply(null,pts.map(function(p){return p.b}))-5)/10)*10, hi=Math.ceil((top+5)/10)*10;
   if(hi-lo<20)hi=lo+20;
-  if(sw){lo=0;hi=N}   // the swipe test: the whole scale, 0 to 10 or 25
   var X=function(i){return L+(W-L-R)*i/(pts.length-1)}, Y=function(v){return T+(H-T-B)*(hi-v)/(hi-lo)};
   var svg='<svg class="prog-chart" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+escH(tx('progSub'))+'">';
-  var step=sw?(N<=10?2:5):(hi-lo)<=60?10:20;
+  var step=(hi-lo)<=60?10:20;
   for(var g=lo;g<=hi;g+=step){svg+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+Y(g)+'" y2="'+Y(g)+'" stroke="rgba(255,255,255,.08)"/><text x="'+(L-8)+'" y="'+(Y(g)+4)+'" fill="#9fb3c8" font-size="12" text-anchor="end">'+g+'</text>'}
   svg+='<polyline fill="none" stroke="#00e5ff" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" points="'+pts.map(function(p,i){return X(i).toFixed(1)+','+Y(p.b).toFixed(1)}).join(' ')+'"/>';
   pts.forEach(function(p,i){
     var isTop=i===topI;
-    svg+='<circle cx="'+X(i).toFixed(1)+'" cy="'+Y(p.b).toFixed(1)+'" r="'+(isTop?7:4.5)+'" fill="'+(isTop?'#ffd35a':'#00e5ff')+'" stroke="#000" stroke-width="1.5"><title>'+p.b+(sw?' / '+N:' BPM')+'</title></circle>';
+    svg+='<circle cx="'+X(i).toFixed(1)+'" cy="'+Y(p.b).toFixed(1)+'" r="'+(isTop?7:4.5)+'" fill="'+(isTop?'#ffd35a':'#00e5ff')+'" stroke="#000" stroke-width="1.5"><title>'+p.b+' BPM</title></circle>';
   });
   svg+='<text x="'+X(topI).toFixed(1)+'" y="'+(Y(top)-12).toFixed(1)+'" fill="#ffd35a" font-size="13" font-weight="900" text-anchor="middle">'+top+'</text>';
   var day=function(p){if(!p.at)return tx('earlier');var d=new Date(p.at);return isNaN(d)?'':(d.getMonth()+1)+'/'+d.getDate()};
