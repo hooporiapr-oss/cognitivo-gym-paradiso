@@ -75,10 +75,13 @@ svg.chart{width:100%;height:auto;display:block}
 #view.z .zcol{display:block}
 .zrcol{display:none}
 #view.zr .zrcol{display:block}
+/* Swipe test (on the Ritnome BPM page): one more column, only once the school has swipe tests */
+.stcol{display:none}
+#view.st .stcol{display:block}
 @media(max-width:520px){
-  #view.m .head,#view.m .row,#view.z .head,#view.z .row,#view.zr .head,#view.zr .row{grid-template-columns:minmax(0,1.2fr) repeat(var(--n,3),minmax(0,1fr));gap:4px}
-  #view.m .v,#view.z .v,#view.zr .v{font-size:.72rem}
-  #view.m .head,#view.z .head,#view.zr .head{font-size:.5rem}
+  #view.m .head,#view.m .row,#view.z .head,#view.z .row,#view.zr .head,#view.zr .row,#view.st .head,#view.st .row{grid-template-columns:minmax(0,1.2fr) repeat(var(--n,3),minmax(0,1fr));gap:4px}
+  #view.m .v,#view.z .v,#view.zr .v,#view.st .v{font-size:.72rem}
+  #view.m .head,#view.z .head,#view.zr .head,#view.st .head{font-size:.5rem}
 }
 @media(max-width:520px){
   .head,.row{grid-template-columns:minmax(0,1.3fr) repeat(var(--n,3),minmax(0,1fr));}
@@ -105,7 +108,7 @@ svg.chart{width:100%;height:auto;display:block}
 <div id="view" hidden>
   <div class="tabs" id="ages"></div>
   <div class="avgs" id="avgs" hidden></div>
-  <div class="head"><span>Player · A–Z</span><span>Ritnome BPM</span><span>Reactific</span><span>Encadena</span><span class="mcol">Swipe It</span><span class="zcol">Zona</span><span class="zrcol">Zona Roja</span><span>Last</span></div>
+  <div class="head"><span>Player · A–Z</span><span>Ritnome BPM</span><span>Reactific</span><span>Encadena</span><span class="mcol">Swipe It</span><span class="zcol">Zona</span><span class="zrcol">Zona Roja</span><span class="stcol">Swipe Test</span><span>Last</span></div>
   <div id="list"></div>
   <div class="count" id="count"></div>
 </div>
@@ -130,7 +133,7 @@ function ageSort(a,b){var x=parseInt(a,10),y=parseInt(b,10);if(!isNaN(x)&&!isNaN
 $('hubBtn').href=HUB;
 
 // ── The coach code: held in memory only ──
-var school='', coachCat='', currentAge='', players={}, loaded=false, hasMobile=false, hasZona=false, hasZR=false;
+var school='', coachCat='', currentAge='', players={}, loaded=false, hasMobile=false, hasZona=false, hasZR=false, hasST=false;
 function deviceId(){var id=null;try{id=localStorage.getItem('gostar-device-id')}catch(e){}
   if(!id){id='d-'+Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2);try{localStorage.setItem('gostar-device-id',id)}catch(e){}}return id}
 function rpc(name,body){return fetch(SB_URL+'/rest/v1/rpc/'+name,{method:'POST',headers:Object.assign({'Content-Type':'application/json'},H),body:JSON.stringify(body)})}
@@ -207,19 +210,20 @@ function loadAll(){
   ]).then(function(res){
     players={};
     function add(game,r,v){
-      var k=String(r.player_name||'').trim().toLowerCase(); if(!k||!(v>0||((game==='zn'||game==='zr')&&v===0)))return;   // a Zona score can be 0
-      var p=players[k]||(players[k]={name:String(r.player_name).trim(),cats:{},rs:[],rf:[],ft:[],hb:[],sw:[],hbP:[],swP:[],mr:[],mrE:[],zn:[],zr:[],last:''});
+      var k=String(r.player_name||'').trim().toLowerCase(); if(!k||!(v>0||((game==='zn'||game==='zr'||game==='st')&&v===0)))return;   // a Zona or swipe test score can be 0
+      var p=players[k]||(players[k]={name:String(r.player_name).trim(),cats:{},rs:[],rf:[],ft:[],hb:[],sw:[],hbP:[],swP:[],mr:[],mrE:[],zn:[],zr:[],st:[],last:''});
       var c=(r.category||'').trim(); if(c)p.cats[c]=1;
       p[game].push({v:v,at:r.logged_at||'',spd:r.speed,h:r.hits,of:r.of});
       if(r.logged_at&&r.logged_at>p.last){p.last=r.logged_at;p.name=String(r.player_name).trim()}
     }
     res[0].forEach(function(r){add('rs',r,rsBpm(r))});
     res[1].forEach(function(r){add('rf',r,rfBpm(r))});
-    res[2].forEach(function(r){var zm=/^zona-(roja-)?(10|25)$/.exec(r.game_key||'');if(zm){r.of=+zm[2];if(r.level!=null)add(zm[1]?'zr':'zn',r,parseInt(r.level,10)||0);return}if(r.game_key==='encadena'||r.game_key==='encadena-facil'){add(r.game_key==='encadena'?'mr':'mrE',r,parseInt(r.level,10)||0);return}var g=r.game_key==='home-base'?'hb':r.game_key==='swipe-it'?'sw':'';if(g)add(g+(r.device==='phone'?'P':''),r,+r.bpm||0)});
+    res[2].forEach(function(r){var sm=/^swipe-test-(10|25)$/.exec(r.game_key||'');if(sm){r.of=+sm[1];if(r.level!=null)add('st',r,parseInt(r.level,10)||0);return}var zm=/^zona-(roja-)?(10|25)$/.exec(r.game_key||'');if(zm){r.of=+zm[2];if(r.level!=null)add(zm[1]?'zr':'zn',r,parseInt(r.level,10)||0);return}if(r.game_key==='encadena'||r.game_key==='encadena-facil'){add(r.game_key==='encadena'?'mr':'mrE',r,parseInt(r.level,10)||0);return}var g=r.game_key==='home-base'?'hb':r.game_key==='swipe-it'?'sw':'';if(g)add(g+(r.device==='phone'?'P':''),r,+r.bpm||0)});
     hasMobile=res[2].some(function(r){return r.game_key==='swipe-it'}); $('view').classList.toggle('m',hasMobile);   // Swipe It column
     hasZona=res[2].some(function(r){return /^zona-(10|25)$/.test(r.game_key||'')}); $('view').classList.toggle('z',hasZona);   // Zona column
     hasZR=res[2].some(function(r){return /^zona-roja-/.test(r.game_key||'')}); $('view').classList.toggle('zr',hasZR);   // Zona Roja column
-    $('view').style.setProperty('--n',3+(hasMobile?1:0)+(hasZona?1:0)+(hasZR?1:0));
+    hasST=res[2].some(function(r){return /^swipe-test-(10|25)$/.test(r.game_key||'')}); $('view').classList.toggle('st',hasST);   // Swipe test column
+    $('view').style.setProperty('--n',3+(hasMobile?1:0)+(hasZona?1:0)+(hasZR?1:0)+(hasST?1:0));
     loaded=true; render();
   }).catch(function(){$('list').innerHTML='<div class="empty">Could not load the boards.</div>'});
 }
@@ -281,10 +285,10 @@ function render(){
   $('ages').querySelectorAll('.tab').forEach(function(b){b.onclick=function(){currentAge=b.dataset.a;render()}});
   var keys=Object.keys(players).filter(function(k){return inAge(players[k])}).sort(function(a,b){return players[a].name.localeCompare(players[b].name,undefined,{sensitivity:'base'})});
   $('list').innerHTML=keys.length?keys.map(function(k){var p=players[k];
-    return '<button class="row" type="button" data-k="'+esc(k)+'"><span class="nm">'+esc(p.name)+'</span><span class="v">'+cellRS(p)+'</span><span class="v">'+cellBpm(p.rf)+'</span><span class="v">'+cellEnc(p.mr,p.mrE)+'</span><span class="v mcol">'+cellTP(p.sw,p.swP)+'</span><span class="v zcol">'+cellZona(p.zn)+'</span><span class="v zrcol">'+cellZona(p.zr)+'</span><span class="last">'+day(p.last)+'</span></button>';
+    return '<button class="row" type="button" data-k="'+esc(k)+'"><span class="nm">'+esc(p.name)+'</span><span class="v">'+cellRS(p)+'</span><span class="v">'+cellBpm(p.rf)+'</span><span class="v">'+cellEnc(p.mr,p.mrE)+'</span><span class="v mcol">'+cellTP(p.sw,p.swP)+'</span><span class="v zcol">'+cellZona(p.zn)+'</span><span class="v zrcol">'+cellZona(p.zr)+'</span><span class="v stcol">'+cellZona(p.st)+'</span><span class="last">'+day(p.last)+'</span></button>';
   }).join(''):'<div class="empty">No players yet'+(currentAge?' in '+esc(currentAge):'')+(school?' at '+esc(school):'')+'.</div>';
   if(!keys.length)whereToday();
-  groupAvg(keys,[{name:'⚡ Ritnome BPM',c:'#FFD700',pick:function(p){return p.rs.length?p.rs:p.hb.length?p.hb:p.hbP}},{name:'🔴 Reactific',c:'#00D9A5',pick:function(p){return p.rf}},{name:'⛓️ Encadena',c:'#e879f9',lv:1,pick:function(p){return p.mr}},{name:'⛓️ Encadena · easy',c:'#d8b4fe',lv:1,pick:function(p){return p.mrE}},{name:'🎯 Zona · 10',c:'#38bdf8',lv:1,of:10,pick:function(p){return p.zn.filter(function(x){return x.of===10})}},{name:'🎯 Zona · 25',c:'#38bdf8',lv:1,of:25,pick:function(p){return p.zn.filter(function(x){return x.of===25})}},{name:'🟥 Zona Roja · 10',c:'#fb7185',lv:1,of:10,pick:function(p){return p.zr.filter(function(x){return x.of===10})}},{name:'🟥 Zona Roja · 25',c:'#fb7185',lv:1,of:25,pick:function(p){return p.zr.filter(function(x){return x.of===25})}},{name:'👆 Swipe It',c:'#ff4757',pick:function(p){return p.sw.length?p.sw:p.swP}}]);
+  groupAvg(keys,[{name:'⚡ Ritnome BPM',c:'#FFD700',pick:function(p){return p.rs.length?p.rs:p.hb.length?p.hb:p.hbP}},{name:'🔴 Reactific',c:'#00D9A5',pick:function(p){return p.rf}},{name:'⛓️ Encadena',c:'#e879f9',lv:1,pick:function(p){return p.mr}},{name:'⛓️ Encadena · easy',c:'#d8b4fe',lv:1,pick:function(p){return p.mrE}},{name:'🎯 Zona · 10',c:'#38bdf8',lv:1,of:10,pick:function(p){return p.zn.filter(function(x){return x.of===10})}},{name:'🎯 Zona · 25',c:'#38bdf8',lv:1,of:25,pick:function(p){return p.zn.filter(function(x){return x.of===25})}},{name:'🟥 Zona Roja · 10',c:'#fb7185',lv:1,of:10,pick:function(p){return p.zr.filter(function(x){return x.of===10})}},{name:'🟥 Zona Roja · 25',c:'#fb7185',lv:1,of:25,pick:function(p){return p.zr.filter(function(x){return x.of===25})}},{name:'↗️ Swipe test · 10',c:'#22d3ee',lv:1,of:10,pick:function(p){return p.st.filter(function(x){return x.of===10})}},{name:'↗️ Swipe test · 25',c:'#22d3ee',lv:1,of:25,pick:function(p){return p.st.filter(function(x){return x.of===25})}},{name:'👆 Swipe It',c:'#ff4757',pick:function(p){return p.sw.length?p.sw:p.swP}}]);
   $('count').textContent=keys.length?keys.length+' player'+(keys.length>1?'s':'')+' · listed A–Z, not ranked':'';
   $('list').querySelectorAll('.row').forEach(function(b){b.onclick=function(){showPlayer(b.dataset.k)}});
 }
@@ -332,6 +336,8 @@ function showPlayer(k){
     (p.zn.some(function(x){return x.of===25})?block('🎯 Zona · 25 targets','#38bdf8',p.zn.filter(function(x){return x.of===25}),'pts','Best',''):'')+
     (p.zr.some(function(x){return x.of===10})?block('🟥 Zona Roja · 10 reds','#fb7185',p.zr.filter(function(x){return x.of===10}),'pts','Best',''):'')+
     (p.zr.some(function(x){return x.of===25})?block('🟥 Zona Roja · 25 reds','#fb7185',p.zr.filter(function(x){return x.of===25}),'pts','Best',''):'')+
+    (p.st.some(function(x){return x.of===10})?block('↗️ Swipe test · 10 arrows','#22d3ee',p.st.filter(function(x){return x.of===10}),'pts','Best',''):'')+
+    (p.st.some(function(x){return x.of===25})?block('↗️ Swipe test · 25 arrows','#22d3ee',p.st.filter(function(x){return x.of===25}),'pts','Best',''):'')+
     (hasMobile?block('👆 Swipe It · tablet','#ffd35a',p.sw,'BPM','Fastest','No Swipe It on a tablet yet.')+
                (p.swP.length?block('📱 Swipe It · phone','#ffd35a',p.swP,'BPM','Fastest',''):''):'');
 }
