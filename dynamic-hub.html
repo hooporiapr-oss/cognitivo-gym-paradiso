@@ -174,7 +174,8 @@ footer{
   color:#6b5d52;
   letter-spacing:.02em;
 }
-.school-tag{font-size:.68rem;color:#5c5468;margin-top:6px;letter-spacing:.04em}
+.school-tag{display:inline-block;margin:12px auto 18px;padding:8px 18px;border-radius:999px;background:rgba(0,229,255,.08);border:1.5px solid rgba(0,229,255,.45);color:#fff;font-size:.95rem;font-weight:800;letter-spacing:.03em}
+.school-tag[hidden]{display:none}
 
 #soundToggle{
   position:fixed;top:14px;right:14px;z-index:30;width:42px;height:42px;border-radius:50%;
@@ -220,6 +221,7 @@ footer{
   <div id="panel">
     <h1 class="arena-title" aria-label="Cognitivo Gym"><span class="w"><i style="animation-delay:90ms">C</i><i style="animation-delay:138ms">O</i><i style="animation-delay:186ms">G</i><i style="animation-delay:234ms">N</i><i style="animation-delay:282ms">I</i><i style="animation-delay:330ms">T</i><i style="animation-delay:378ms">I</i><i style="animation-delay:426ms">V</i><i style="animation-delay:474ms">O</i></span><span class="w g"><i style="animation-delay:522ms">G</i><i style="animation-delay:570ms">Y</i><i style="animation-delay:618ms">M</i></span></h1>
     <div class="arena-sub">Train Your Mind. Build Your Skills.</div>
+    <div class="school-tag" id="schoolTag" hidden></div>
 
     <div class="group-label" style="animation-delay:1.05s">Reaction Velocity</div>
     <a class="rit-card g-rt" href="ritnome-congas.html" style="animation-delay:1.08s">
@@ -263,7 +265,6 @@ footer{
     </div>
 
     <footer style="animation-delay:1.6s">Gostar Digital LLC</footer>
-    <div class="school-tag" id="schoolTag" style="animation-delay:1.65s"></div>
   </div>
 </div>
 
@@ -282,7 +283,7 @@ soundBtn.addEventListener('click',function(e){
 // Shows whose access this is — useful on a shared classroom device
 // where the last person's code may still be the one in session.
 var school=sessionStorage.getItem('hoop-school');
-if(school){ document.getElementById('schoolTag').textContent=school; }
+if(school){ var cat=sessionStorage.getItem('ritnome-category'); var st=document.getElementById('schoolTag'); st.textContent='🏫 '+school+(cat?' · '+cat:''); st.hidden=false; }
 
 // Exits the product entirely — clears every pass so the next visit
 // genuinely requires the access code again, rather than silently
